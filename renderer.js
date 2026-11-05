@@ -11,30 +11,30 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 // ---------- presets
 
 const ACCENTS = {
-  salsa: ['#ff5a47', '#ff9a4a', 'Сальса'],
-  berry: ['#ff4f8b', '#ff7a5c', 'Ягода'],
-  grape: ['#9b6bff', '#d46bff', 'Виноград'],
-  ocean: ['#3d8bff', '#3fd0ff', 'Океан'],
-  lime: ['#2fc48d', '#9be15d', 'Лайм'],
-  honey: ['#f5a524', '#ffd166', 'Мёд'],
+  mustard: ['#e8b931', '#d9653b', 'Горчица'],
+  tomato: ['#e0552f', '#e8b931', 'Томат'],
+  moss: ['#9bbf6a', '#e8b931', 'Мох'],
+  teal: ['#4fa3a5', '#e0a35a', 'Бирюза'],
+  plum: ['#b07acc', '#e8b931', 'Слива'],
+  chalk: ['#ece6d6', '#d9653b', 'Мел'],
 };
 const PANELS = {
-  graphite: ['#15171f', 'Графит'],
-  midnight: ['#111830', 'Полночь'],
-  coal: ['#0d0d10', 'Уголь'],
-  plum: ['#1e1524', 'Слива'],
-  pine: ['#10201a', 'Хвоя'],
-  mocha: ['#211915', 'Мокко'],
+  ink: ['#171917', 'Тушь'],
+  moss: ['#161c15', 'Мох'],
+  coffee: ['#1f1914', 'Кофе'],
+  slate: ['#191b21', 'Сланец'],
+  night: ['#121622', 'Ночь'],
+  brick: ['#221613', 'Кирпич'],
 };
 const BACKGROUNDS = {
-  tako: { name: 'Тако', css: (a, b) => `radial-gradient(1100px 620px at 50% -12%, rgba(${hexRgb(a)}, .30), transparent 62%), radial-gradient(900px 520px at 100% 110%, rgba(${hexRgb(b)}, .16), transparent 60%), #0c0d12` },
-  night: { name: 'Ночь', css: () => 'radial-gradient(1000px 600px at 80% 0%, #1d2b5a 0%, transparent 60%), linear-gradient(160deg, #090c18, #0d1226 55%, #07080f)' },
-  aurora: { name: 'Сияние', css: () => 'radial-gradient(at 18% 22%, #1b5a50 0, transparent 50%), radial-gradient(at 82% 28%, #44307a 0, transparent 50%), radial-gradient(at 50% 92%, #0f3b5a 0, transparent 55%), #0a0c13' },
-  sunset: { name: 'Закат', css: () => 'linear-gradient(165deg, #1d0f2e 0%, #4a1735 45%, #a2402c 85%, #d9813a 100%)' },
-  ocean: { name: 'Глубина', css: () => 'radial-gradient(900px 600px at 20% 10%, #0f5e7a 0%, transparent 60%), linear-gradient(170deg, #031a26, #062c43 60%, #020c13)' },
-  forest: { name: 'Лес', css: () => 'radial-gradient(800px 500px at 70% 0%, #1f5a3c 0%, transparent 60%), linear-gradient(165deg, #07140e, #0d2419 60%, #050b08)' },
-  candy: { name: 'Конфета', css: () => 'linear-gradient(135deg, #2b0f45 0%, #6d1f63 50%, #1c2259 100%)' },
-  mono: { name: 'Без фона', css: () => 'var(--bg-solid)' },
+  ink: { name: 'тушь', css: () => 'radial-gradient(120% 90% at 50% 0%, #1d201c 0%, #0e100e 70%)' },
+  mustard: { name: 'горчица', css: (a) => `radial-gradient(70% 60% at 100% 0%, rgba(${hexRgb(a)}, .22), transparent 70%), linear-gradient(170deg, #181914, #0e0f0c)` },
+  moss: { name: 'мох', css: () => 'linear-gradient(170deg, #1e2a19 0%, #121a10 55%, #0b0f0a 100%)' },
+  brick: { name: 'кирпич', css: () => 'linear-gradient(170deg, #32190f 0%, #1c0f0b 60%, #100907 100%)' },
+  dusk: { name: 'сумерки', css: () => 'linear-gradient(178deg, #1a1f2e 0%, #2a2232 50%, #3d2a22 100%)' },
+  sea: { name: 'море', css: () => 'linear-gradient(170deg, #12292b 0%, #0c1b1d 60%, #081012 100%)' },
+  paper: { name: 'крафт', css: () => 'linear-gradient(170deg, #3a2e1f 0%, #261e14 60%, #17120c 100%)' },
+  mono: { name: 'ровно', css: () => 'var(--bg-solid)' },
 };
 const ENGINES = {
   google: ['Google', 'https://www.google.com/search?q='],
@@ -42,7 +42,7 @@ const ENGINES = {
   ddg: ['DuckDuckGo', 'https://duckduckgo.com/?q='],
   bing: ['Bing', 'https://www.bing.com/search?q='],
 };
-const COLORS = ['#ff5a47', '#ff9a4a', '#f5c84b', '#2fc48d', '#3fd0ff', '#3d8bff', '#9b6bff', '#ff4f8b'];
+const COLORS = ['#e8b931', '#d9653b', '#e0552f', '#9bbf6a', '#4fa3a5', '#6b8fd6', '#b07acc', '#ece6d6'];
 const DEFAULT_DIAL = [
   { name: 'YouTube', url: 'https://www.youtube.com/' },
   { name: 'Google', url: 'https://www.google.com/' },
@@ -54,10 +54,10 @@ const DEFAULT_DIAL = [
 ];
 
 const DEFAULTS = {
-  accent: 'salsa', accentCustom: '#ff5a47',
-  panel: 'graphite', panelCustom: '#15171f', panelAlpha: 78,
-  radius: 14, motion: true,
-  bg: 'tako', bgImage: '', bgColor1: '#1d1f4a', bgColor2: '#5a1f3a', bgAngle: 150, bgDim: 15, bgBlur: 0, bgAnim: true,
+  accent: 'mustard', accentCustom: '#e8b931',
+  panel: 'ink', panelCustom: '#171917', panelAlpha: 92,
+  radius: 6, motion: true,
+  bg: 'ink', bgImage: '', bgColor1: '#1e2a19', bgColor2: '#32190f', bgAngle: 160, bgDim: 10, bgBlur: 0, bgGrain: true,
   tabsPos: 'top', tabsCompact: false, tabsWidth: 240, tabColorMode: 'accent', newTabNext: true, restore: true,
   engine: 'google', greeting: 'Куда отправимся?', clock: true,
   dial: DEFAULT_DIAL,
@@ -145,14 +145,14 @@ function toast(msg, opts = {}) {
 
 function accentPair() {
   if (S.accent === 'custom') return [S.accentCustom, hueShift(S.accentCustom, 22, 0.08)];
-  return ACCENTS[S.accent] || ACCENTS.salsa;
+  return ACCENTS[S.accent] || ACCENTS.mustard;
 }
 
 function backgroundCss() {
   const [a, b] = accentPair();
-  if (S.bg === 'image' && S.bgImage) return `url("${S.bgImage.replace(/"/g, '%22')}") center / cover no-repeat, #0c0d12`;
+  if (S.bg === 'image' && S.bgImage) return `url("${S.bgImage.replace(/"/g, '%22')}") center / cover no-repeat, #0e100e`;
   if (S.bg === 'gradient') return `linear-gradient(${S.bgAngle}deg, ${S.bgColor1}, ${S.bgColor2})`;
-  return (BACKGROUNDS[S.bg] || BACKGROUNDS.tako).css(a, b);
+  return (BACKGROUNDS[S.bg] || BACKGROUNDS.ink).css(a, b);
 }
 
 function applyAppearance() {
@@ -161,24 +161,25 @@ function applyAppearance() {
   root.setProperty('--accent', a);
   root.setProperty('--accent-2', b);
   root.setProperty('--accent-rgb', hexRgb(a));
+  const [r, g, bl] = rgbArr(a);
+  root.setProperty('--on-accent', (0.299 * r + 0.587 * g + 0.114 * bl) > 150 ? '#17150f' : '#fffaf0');
 
-  const panel = S.panel === 'custom' ? S.panelCustom : (PANELS[S.panel] || PANELS.graphite)[0];
+  const panel = S.panel === 'custom' ? S.panelCustom : (PANELS[S.panel] || PANELS.ink)[0];
   root.setProperty('--panel-rgb', hexRgb(panel));
   root.setProperty('--panel-a', String(clamp(S.panelAlpha, 20, 100) / 100));
-  root.setProperty('--surface', shade(panel, 2));
-  root.setProperty('--surface-2', shade(panel, 9));
-  root.setProperty('--surface-3', shade(panel, 19));
+  root.setProperty('--surface', shade(panel, 3));
+  root.setProperty('--surface-2', shade(panel, 10));
+  root.setProperty('--surface-3', shade(panel, 22));
   root.setProperty('--bg-solid', shade(panel, -8));
-  root.setProperty('--glass', `rgba(${hexRgb(shade(panel, -2))}, .86)`);
   root.setProperty('--r', S.radius + 'px');
   root.setProperty('--tabs-w', S.tabsWidth + 'px');
   root.setProperty('--notes-w', S.notesWidth + 'px');
   root.setProperty('--bg-dim', String(S.bgDim / 100));
   root.setProperty('--bg-blur', S.bgBlur + 'px');
   $('#bg-img').style.background = backgroundCss();
-  document.body.classList.toggle('bg-anim', !!S.bgAnim && S.bg !== 'image');
+  document.body.classList.toggle('grain', !!S.bgGrain);
   document.body.classList.toggle('no-motion', !S.motion);
-  T.win.overlay('#00000000', '#aab0c4');
+  T.win.overlay('#00000000', '#c2bba8');
   renderTabs();
 }
 
@@ -209,7 +210,9 @@ function hostOf(url) {
 
 function displayUrl(url) {
   if (!url) return '';
-  return url.replace(/^https:\/\//, '').replace(/^([^/?#]+)\/$/, '$1');
+  let u = url;
+  try { u = decodeURI(url); } catch { /* keep as is */ }
+  return u.replace(/^https:\/\//, '').replace(/^([^/?#]+)\/$/, '$1');
 }
 
 // ---------- tabs
@@ -264,6 +267,7 @@ function makeWebview(tab) {
   wv.addEventListener('focus', closeFloating);
   wv.addEventListener('dom-ready', () => { if (tab.id === activeId) updateToolbar(); });
 
+  if (tab.id === activeId) wv.classList.add('active');
   $('#content').append(wv);
   tab.wv = wv;
   return wv;
@@ -553,7 +557,7 @@ function renderDial() {
   });
   const add = document.createElement('button');
   add.className = 'tile add';
-  add.innerHTML = `<div class="ico">${icon('plus')}</div><span>Добавить</span>`;
+  add.innerHTML = `<div class="ico">${icon('plus')}</div><span>добавить</span>`;
   add.onclick = () => editDial(-1);
   box.append(add);
   $('#greeting').textContent = S.greeting || '';
@@ -606,7 +610,7 @@ function tickClock() {
   document.body.classList.toggle('has-clock', !!S.clock);
   if (!S.clock) return;
   const d = new Date();
-  c.innerHTML = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}<small>${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]}</small>`;
+  c.innerHTML = `${DAYS[d.getDay()]} · ${d.getDate()} ${MONTHS[d.getMonth()]} · <b>${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}</b>`;
 }
 
 // ---------- floating menus
@@ -1013,12 +1017,12 @@ function renderSettings() {
 
 const SETTINGS_PANELS = {
   look: () => {
-    const accents = Object.entries(ACCENTS).map(([k, [a, b, name]]) => `<button class="swatch ${S.accent === k ? 'on' : ''}" data-accent="${k}" title="${name}" style="background:linear-gradient(135deg,${a},${b})"></button>`).join('')
+    const accents = Object.entries(ACCENTS).map(([k, [a, b, name]]) => `<button class="swatch ${S.accent === k ? 'on' : ''}" data-accent="${k}" title="${name}" style="background:linear-gradient(135deg,${a} 70%,${b} 70%)"></button>`).join('')
       + `<label class="color-in ${S.accent === 'custom' ? 'on' : ''}" title="Свой цвет"><input type="color" id="accent-custom" value="${S.accentCustom}"></label>`;
     const panels = Object.entries(PANELS).map(([k, [c, name]]) => `<button class="swatch ${S.panel === k ? 'on' : ''}" data-panel="${k}" title="${name}" style="background:${c}"></button>`).join('')
       + `<label class="color-in ${S.panel === 'custom' ? 'on' : ''}" title="Свой цвет"><input type="color" id="panel-custom" value="${S.panelCustom}"></label>`;
     const [a, b] = accentPair();
-    const bgs = Object.entries(BACKGROUNDS).map(([k, v]) => `<button class="bg-opt ${S.bg === k ? 'on' : ''}" data-bg="${k}" style="background:${v.css(a, b).replace('var(--bg-solid)', '#0c0d12')}"><span>${v.name}</span></button>`).join('')
+    const bgs = Object.entries(BACKGROUNDS).map(([k, v]) => `<button class="bg-opt ${S.bg === k ? 'on' : ''}" data-bg="${k}" style="background:${v.css(a, b).replace('var(--bg-solid)', '#101210')}"><span>${v.name}</span></button>`).join('')
       + `<button class="bg-opt ${S.bg === 'gradient' ? 'on' : ''}" data-bg="gradient" style="background:linear-gradient(${S.bgAngle}deg,${S.bgColor1},${S.bgColor2})"><span>Свой градиент</span></button>`
       + (S.bgImage ? `<button class="bg-opt ${S.bg === 'image' ? 'on' : ''}" data-bg="image" style="background:url('${esc(S.bgImage)}') center/cover"><span>Картинка</span></button>` : '')
       + `<button class="bg-opt upload" id="bg-upload">${icon('image')}<span>Своя картинка…</span></button>`;
@@ -1026,7 +1030,7 @@ const SETTINGS_PANELS = {
       ${row('Цвет акцента', 'Кнопки, индикаторы, подсветка', `<div class="swatches">${accents}</div>`)}
       ${row('Цвет панелей', 'Вкладки, адресная строка, заметки', `<div class="swatches">${panels}</div>`)}
       ${row('Прозрачность панелей', 'Чем меньше — тем сильнее виден фон', range('panelAlpha', 20, 100, '%'))}
-      ${row('Скругление углов', '', range('radius', 0, 26, ' px'))}
+      ${row('Скругление углов', '0 — совсем острые', range('radius', 0, 14, ' px'))}
       <h4>Фон</h4>
       <div class="set-row col"><div class="bg-grid">${bgs}</div></div>
       ${S.bg === 'gradient' ? row('Цвета градиента', '', `<input type="color" class="plain" data-key="bgColor1" value="${S.bgColor1}"><input type="color" class="plain" data-key="bgColor2" value="${S.bgColor2}">${range('bgAngle', 0, 360, '°')}`) : ''}
@@ -1034,7 +1038,7 @@ const SETTINGS_PANELS = {
         <form class="inline-form" id="bg-url-form"><input class="text-input" id="bg-url" placeholder="https://…/wallpaper.jpg" value="${S.bg === 'image' && /^https?:/.test(S.bgImage) ? esc(S.bgImage) : ''}"><button class="btn">Применить</button></form></div>
       ${row('Затемнение фона', '', range('bgDim', 0, 85, '%'))}
       ${row('Размытие фона', '', range('bgBlur', 0, 40, ' px'))}
-      ${row('Живой фон', 'Медленно плывущие пятна цвета акцента', sw('bgAnim'))}
+      ${row('Зерно', 'Лёгкая шероховатость, как у бумаги', sw('bgGrain'))}
       ${row('Анимации интерфейса', '', sw('motion'))}`;
   },
   tabs: () => {

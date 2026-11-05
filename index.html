@@ -41,11 +41,11 @@
   </defs>
 </svg>
 
-<div id="bg"><div id="bg-img"></div><div id="bg-blobs"><i></i><i></i><i></i></div><div id="bg-dim"></div></div>
+<div id="bg"><div id="bg-img"></div><div id="bg-dim"></div><div id="bg-grain"></div></div>
 
 <header id="titlebar">
   <img class="logo" src="assets/logo.png" alt="">
-  <span class="app-name">Tako<span class="app-suffix">.browser</span></span>
+  <span class="app-name">tako<span class="app-suffix">/browser</span></span>
   <span class="page-title" id="page-title"></span>
   <div class="slot" id="slot-top"></div>
   <div class="drag-fill"></div>
@@ -118,23 +118,23 @@
 
       <div id="content">
         <section id="start">
-          <div class="start-glow"></div>
           <div class="start-inner">
-            <div id="clock"></div>
-            <img class="start-logo" src="assets/logo.png" alt="">
+            <div class="start-meta"><img class="start-logo" src="assets/logo.png" alt=""><span id="clock"></span></div>
             <h1 id="greeting">Куда отправимся?</h1>
+            <svg class="squiggle" viewBox="0 0 240 14" preserveAspectRatio="none" aria-hidden="true"><path d="M3 9c14-5 22 4 36 1s19-7 33-4 18 6 32 3 20-6 34-3 17 5 31 2 21-5 35-2 22 4 33 1"/></svg>
             <form id="start-search" autocomplete="off">
               <svg class="i"><use href="#i-search"/></svg>
               <input id="start-input" spellcheck="false" placeholder="Искать в Google или ввести адрес">
-              <button class="btn accent" type="submit">Найти</button>
+              <button class="btn accent" type="submit">Найти <kbd>↵</kbd></button>
             </form>
+            <div class="dial-head"><span>Мои сайты</span><small>правая кнопка по плитке — изменить</small></div>
             <div id="dial"></div>
           </div>
-          <button class="btn ghost small start-customize" id="start-customize"><svg class="i"><use href="#i-palette"/></svg>Настроить вид</button>
+          <button class="link-btn start-customize" id="start-customize">настроить вид →</button>
         </section>
         <div id="page-error" hidden>
           <img src="assets/logo.png" alt="">
-          <h2>Страница не открылась</h2>
+          <h2>Не открылось.</h2>
           <p id="page-error-text"></p>
           <div class="row"><button class="btn accent" id="page-error-retry">Попробовать снова</button><button class="btn" id="page-error-vpn">Открыть через VPN</button></div>
         </div>

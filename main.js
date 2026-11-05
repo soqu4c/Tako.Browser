@@ -64,7 +64,7 @@ function createWindow() {
     height: 860,
     minWidth: 760,
     minHeight: 480,
-    backgroundColor: '#0c0d12',
+    backgroundColor: '#101210',
     title: 'Tako.Browser',
     icon: path.join(__dirname, 'assets', 'icon.png'),
     titleBarStyle: 'hidden',
@@ -127,7 +127,7 @@ app.on('web-contents-created', (_e, contents) => {
     if (disposition === 'new-window') {
       return {
         action: 'allow',
-        overrideBrowserWindowOptions: { width: 520, height: 680, autoHideMenuBar: true, backgroundColor: '#0c0d12', icon: path.join(__dirname, 'assets', 'icon.png') },
+        overrideBrowserWindowOptions: { width: 520, height: 680, autoHideMenuBar: true, backgroundColor: '#101210', icon: path.join(__dirname, 'assets', 'icon.png') },
       };
     }
     send('tab:open', { url, background: disposition === 'background-tab' });
