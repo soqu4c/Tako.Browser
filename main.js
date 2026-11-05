@@ -616,6 +616,8 @@ function setupUpdates() {
     ({ autoUpdater: updater } = require('electron-updater'));
   } catch { return; }
   updater.autoDownload = true;
+  // a beta build follows the betas; a stable one only stable releases
+  updater.allowPrerelease = app.getVersion().includes('-');
   updater.autoInstallOnAppQuit = true;
   updater.on('update-available', (i) => send('update', { state: 'available', version: i.version }));
   updater.on('update-not-available', () => send('update', { state: 'none' }));

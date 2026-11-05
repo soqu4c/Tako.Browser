@@ -1,6 +1,6 @@
 {
   "name": "tako-browser",
-  "version": "0.2.0",
+  "version": "0.3.0-beta.1",
   "description": "Tako.Browser — браузер с кастомизацией, заметками и встроенным VPN",
   "author": "takao",
   "main": "main.js",

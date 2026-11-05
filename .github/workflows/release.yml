@@ -1,0 +1,48 @@
+# Builds the Windows installer and publishes it as a GitHub release when a v* tag is pushed.
+# Tags with a dash (v0.3.0-beta.1) become pre-releases.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Xray makes vless/vmess/trojan/ss links work without any setup
+      - name: Bundle the Xray core
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force bin | Out-Null
+          Invoke-WebRequest https://github.com/XTLS/Xray-core/releases/latest/download/Xray-windows-64.zip -OutFile xray.zip
+          Expand-Archive xray.zip -DestinationPath xray -Force
+          Copy-Item xray/xray.exe bin/
+          if (Test-Path xray/LICENSE) { Copy-Item xray/LICENSE bin/xray-LICENSE.txt }
+
+      - name: Build the installer
+        run: npx electron-builder --win --x64 --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: Tako.Browser ${{ github.ref_name }}
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          body_path: RELEASE_NOTES.md
+          files: |
+            dist/*.exe
+            dist/*.exe.blockmap
+            dist/latest.yml
