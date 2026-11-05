@@ -453,3 +453,23 @@ body.start-editing .start-customize { display: none; }
 body.show-squiggle.theme-tako .squiggle { display: block; width: 210px; height: 14px; margin: -6px auto 14px; overflow: visible; }
 body.show-squiggle.theme-tako.start-left .squiggle { margin-left: 2px; }
 body.show-squiggle.theme-tako .squiggle path { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- clock: either style in either theme */
+#clock .clock-extra { display: flex; flex-wrap: wrap; gap: 4px 14px; justify-content: center; margin-top: 8px; font-size: 12px; font-weight: 500; letter-spacing: .02em; text-transform: none; color: var(--soft); }
+#clock .clock-extra i { font-style: normal; color: var(--muted); }
+body.start-left #clock .clock-extra { justify-content: flex-start; }
+/* big digits in the hand-made theme */
+body.theme-handmade.clock-big #clock { display: block; padding: 0; border: none; background: none; font: 300 64px/1 var(--mono); letter-spacing: -.02em; text-transform: none; color: var(--text); }
+body.theme-handmade.clock-big #clock small { display: block; margin-top: 8px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--soft); }
+body.theme-handmade.clock-big .start-meta { flex-direction: column-reverse; align-items: flex-start; gap: 12px; }
+/* the small plate in the Tako theme */
+body.theme-tako.clock-chip #clock { font-size: 12.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--soft); padding: 5px 12px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line-2); line-height: 1.4; text-shadow: none; }
+body.theme-tako.clock-chip #clock b { color: var(--accent); }
+body.theme-tako.clock-chip #clock .clock-extra { text-transform: none; letter-spacing: 0; margin-top: 4px; }
+/* digit size */
+body.clock-sized.clock-big #clock .clock-time { font-size: var(--clock-size); line-height: 1; }
+body.clock-sized.clock-chip #clock { font-size: calc(var(--clock-size) * .25); }
+body.clock-sized.clock-chip #clock b { font-size: calc(var(--clock-size) * .3); }
+
+body.theme-handmade #clock .clock-extra { justify-content: flex-start; }
+body.theme-handmade.clock-big #clock .clock-extra { font-family: var(--mono); }

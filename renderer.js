@@ -101,6 +101,7 @@ const DEFAULTS = {
   showAppName: true, notesSide: 'auto',
   tabsPos: 'top', tabsCompact: false, tabsWidth: 240, tabMax: 210, tabClose: true, tabColorMode: 'accent', newTabNext: true, restore: true,
   engine: 'google', engineUrl: '', searchStyle: 'tako', searchRegion: 'ru-ru', greeting: 'Куда отправимся?', clock: true,
+  clockFormat: '24', clockSeconds: false, clockDate: 'full', clockTz: 'local', clockExtra: [], clockStyle: 'auto', clockSize: 0,
   start: {
     logo: true, search: true, dial: true, customize: true, align: 'center', valign: 'center',
     squiggle: 'auto', head: 'auto', hint: true, title: 'Мои сайты', greetingSize: 0, width: 0, searchHeight: 0,
@@ -952,6 +953,32 @@ function toggleDialForActive() {
 
 const MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
 const DAYS = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
+// Time zones offered for the clock and the extra clocks
+const TIME_ZONES = {
+  local: 'Как на компьютере',
+  'Europe/Kaliningrad': 'Калининград', 'Europe/Moscow': 'Москва', 'Europe/Samara': 'Самара', 'Asia/Yekaterinburg': 'Екатеринбург',
+  'Asia/Omsk': 'Омск', 'Asia/Novosibirsk': 'Новосибирск', 'Asia/Krasnoyarsk': 'Красноярск', 'Asia/Irkutsk': 'Иркутск',
+  'Asia/Yakutsk': 'Якутск', 'Asia/Vladivostok': 'Владивосток', 'Asia/Kamchatka': 'Камчатка',
+  'Europe/Minsk': 'Минск', 'Europe/Kyiv': 'Киев', 'Asia/Almaty': 'Алматы', 'Asia/Tashkent': 'Ташкент', 'Asia/Tbilisi': 'Тбилиси', 'Asia/Yerevan': 'Ереван',
+  'Europe/Istanbul': 'Стамбул', 'Europe/Berlin': 'Берлин', 'Europe/London': 'Лондон', 'America/New_York': 'Нью-Йорк',
+  'America/Los_Angeles': 'Лос-Анджелес', 'Asia/Dubai': 'Дубай', 'Asia/Shanghai': 'Пекин', 'Asia/Tokyo': 'Токио', 'Asia/Bangkok': 'Бангкок',
+};
+
+function clockParts(d, tz) {
+  const zone = tz && tz !== 'local' ? { timeZone: tz } : {};
+  let time;
+  try {
+    time = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit', second: S.clockSeconds ? '2-digit' : undefined, hour12: S.clockFormat === '12', ...zone }).format(d);
+  } catch { time = d.toTimeString().slice(0, S.clockSeconds ? 8 : 5); }
+  let date = '';
+  try {
+    if (S.clockDate === 'full') date = new Intl.DateTimeFormat('ru-RU', { weekday: 'long', day: 'numeric', month: 'long', ...zone }).format(d);
+    else if (S.clockDate === 'short') date = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', ...zone }).format(d);
+    else if (S.clockDate === 'numeric') date = new Intl.DateTimeFormat('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', ...zone }).format(d);
+  } catch { date = ''; }
+  return { time, date };
+}
+
 let clockKey = '';
 function tickClock(force) {
   const c = $('#clock');
@@ -959,12 +986,23 @@ function tickClock(force) {
   document.body.classList.toggle('has-clock', !!S.clock);
   if (!S.clock || (!force && $('#start').hidden)) return; // nobody sees it
   const d = new Date();
-  const hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-  const date = `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
-  const key = S.theme + hm + date;
+  const style = S.clockStyle === 'auto' ? (S.theme === 'handmade' ? 'chip' : 'big') : S.clockStyle;
+  const main = clockParts(d, S.clockTz);
+  const place = S.clockTz && S.clockTz !== 'local' ? TIME_ZONES[S.clockTz] || S.clockTz.split('/').pop().replace(/_/g, ' ') : '';
+  const extra = (S.clockExtra || []).filter((z) => z !== S.clockTz).map((z) => [TIME_ZONES[z] || z, clockParts(d, z).time]);
+  const key = [style, main.time, main.date, place, extra.join()].join('|');
   if (key === clockKey) return;
   clockKey = key;
-  c.innerHTML = S.theme === 'handmade' ? `${date.replace(',', ' ·')} · <b>${hm}</b>` : `${hm}<small>${date}</small>`;
+  document.body.classList.toggle('clock-chip', style === 'chip');
+  document.body.classList.toggle('clock-big', style === 'big');
+  const extraHtml = extra.length ? `<span class="clock-extra">${extra.map(([n, t]) => `<span><i>${esc(n)}</i> ${esc(t)}</span>`).join('')}</span>` : '';
+  if (style === 'chip') {
+    const label = [place, main.date].filter(Boolean).join(' · ');
+    c.innerHTML = `${label ? esc(label) + ' · ' : ''}<b>${esc(main.time)}</b>${extraHtml}`;
+  } else {
+    const sub = [place, main.date].filter(Boolean).join(' · ');
+    c.innerHTML = `<span class="clock-time">${esc(main.time)}</span>${sub ? `<small>${esc(sub)}</small>` : ''}${extraHtml}`;
+  }
 }
 
 // ---------- floating menus
@@ -1961,7 +1999,7 @@ async function init() {
   applyAppearance();
   renderDial();
   tickClock();
-  setInterval(tickClock, 5000);
+  setInterval(() => tickClock(), 1000); // the start page only redraws when the text changes
   setInterval(() => suspendIdleTabs(false), 60000);
   wire();
   runHooks('wire');

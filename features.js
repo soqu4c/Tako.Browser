@@ -760,7 +760,7 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
 
   // ===================================================================== light mode, saved looks, video background
 
-  const LOOK_KEYS = ['tune', 'start', 'theme', 'mode', 'lightFrom', 'lightTo', 'accent', 'accentCustom', 'accent2Custom', 'panel', 'panelCustom', 'panelL', 'panelCustomL', 'panelAlpha', 'textColor', 'textColorL',
+  const LOOK_KEYS = ['clock', 'clockFormat', 'clockSeconds', 'clockDate', 'clockTz', 'clockExtra', 'clockStyle', 'clockSize', 'tune', 'start', 'theme', 'mode', 'lightFrom', 'lightTo', 'accent', 'accentCustom', 'accent2Custom', 'panel', 'panelCustom', 'panelL', 'panelCustomL', 'panelAlpha', 'textColor', 'textColorL',
     'radius', 'motion', 'bg', 'bgL', 'bgImage', 'bgVideo', 'bgColor1', 'bgColor2', 'bgAngle', 'bgDim', 'bgBlur', 'bgAnim', 'bgGrain', 'font', 'fontCustom',
     'uiScale', 'density', 'gap', 'tabsPos', 'tabsCompact', 'tabsWidth', 'tabMax', 'tabClose', 'tabColorMode', 'customCss'];
   const lookNow = () => Object.fromEntries(LOOK_KEYS.map((k) => [k, structuredClone(S[k])]));
@@ -790,6 +790,8 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
   HOOKS.appearance.push(() => {
     applyTune();
     applyStart();
+    $('#start').style.setProperty('--clock-size', (S.clockSize || 0) + 'px');
+    document.body.classList.toggle('clock-sized', !!S.clockSize);
     if (curBg() === 'video') document.body.classList.remove('bg-anim');
     syncBgVideo();
     if (S.mode === 'system') T.themeSource('system').then((dark) => { if (dark !== systemDark) { systemDark = dark; applyAppearance(); } });
@@ -1055,6 +1057,14 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
         <label class="field"><span class="label">Заголовок над плитками</span><input class="text-input" data-key="start.title" value="${esc(S.start.title)}"></label>
         <h4>Что показывать</h4>
         <div class="chips">${chip('start.logo', 'Логотип')}${chip('clock', 'Часы')}<button class="chip ${startShows('squiggle') ? 'on' : ''}" data-start-show="squiggle">Волна</button>${chip('start.search', 'Поиск')}<button class="chip ${startShows('head') ? 'on' : ''}" data-start-show="head">Заголовок</button>${chip('start.hint', 'Подсказка')}${chip('start.dial', 'Плитки')}${chip('start.customize', 'Кнопка «Настроить»')}</div>
+        <h4>Часы</h4>
+        <div class="field"><span class="label">Формат</span>${seg('clockFormat', [['24', '24 часа'], ['12', '12 часов']])}</div>
+        <div class="chips">${chip('clockSeconds', 'Секунды')}</div>
+        <div class="field"><span class="label">Дата</span>${seg('clockDate', [['full', 'С днём недели'], ['short', 'Число и месяц'], ['numeric', '05.11.2026'], ['none', 'Без даты']])}</div>
+        <div class="field"><span class="label">Вид</span>${seg('clockStyle', [['auto', 'Как в теме'], ['big', 'Крупные'], ['chip', 'Плашка']])}</div>
+        ${row('Размер цифр', S.clockSize ? '' : 'как в теме', range('clockSize', 0, 140, ' px', 2))}
+        <label class="field"><span class="label">Часовой пояс</span><select class="text-input" id="clock-tz">${Object.entries(TIME_ZONES).map(([k, n]) => `<option value="${k}" ${S.clockTz === k ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></label>
+        <div class="field"><span class="label">Ещё часы — время в других городах</span><div class="chips">${Object.entries(TIME_ZONES).filter(([k]) => k !== 'local').map(([k, n]) => `<button class="chip ${(S.clockExtra || []).includes(k) ? 'on' : ''}" data-clock-extra="${k}">${esc(n)}</button>`).join('')}</div></div>
         <h4>Размеры</h4>
         ${row('Приветствие', S.start.greetingSize ? '' : 'как в теме', range('start.greetingSize', 0, 80, ' px', 2))}
         ${row('Ширина', S.start.width ? '' : 'как в теме', range('start.width', 0, 1100, ' px', 20))}
@@ -1072,6 +1082,14 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
         </div>
       </div>`;
     bindSettings(ed);
+    const tz = $('#clock-tz', ed);
+    if (tz) tz.onchange = () => { S.clockTz = tz.value; onSettingChanged('clockTz'); };
+    for (const c of $$('[data-clock-extra]', ed)) c.onclick = () => {
+      const z = c.dataset.clockExtra;
+      const list = S.clockExtra || [];
+      S.clockExtra = list.includes(z) ? list.filter((x) => x !== z) : [...list, z].slice(-4);
+      onSettingChanged('clockExtra');
+    };
     for (const c of $$('[data-start-show]', ed)) c.onclick = () => { const k = c.dataset.startShow; S.start[k] = !startShows(k); onSettingChanged('start.' + k); };
     ed.scrollTop = scroll;
     $('#se-close', ed).onclick = () => toggleStartEditor(false);
@@ -1393,10 +1411,16 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
     if (key === 'bmBar' || key === 'showWs') { renderBmBar(); renderWs(); }
     if (key === 'extButtons') $('#ext-actions').hidden = !S.extButtons;
     if (key === 'extPrivate') T.extPrivate(S.extPrivate).then(() => toast(S.extPrivate ? 'Расширения включены в приватных вкладках (для уже открытых — после перезагрузки страницы)' : 'Расширения в приватных вкладках выключены'));
-    if (key === 'greeting' || key === 'clock' || key.startsWith('start')) {
+    if (key.startsWith('clock')) {
+      clockKey = '';
+      tickClock(true);
+      document.getElementById('start').style.setProperty('--clock-size', (S.clockSize || 0) + 'px');
+      document.body.classList.toggle('clock-sized', !!S.clockSize);
+    }
+    if (key === 'greeting' || key.startsWith('clock') || key.startsWith('start')) {
       applyStart();
       // sliders and text fields keep working under the cursor; chips and switches redraw the editor
-      const live = ['greeting', 'start.title', 'start.greetingSize', 'start.width', 'start.searchHeight'];
+      const live = ['greeting', 'start.title', 'start.greetingSize', 'start.width', 'start.searchHeight', 'clockSize'];
       if (editorOpen && !live.includes(key)) renderStartEditor();
     }
     if (key === 'mode') { lastLight = null; }
