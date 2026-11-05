@@ -1467,7 +1467,8 @@ async function updateStats() {
   const m = await T.metrics();
   const loaded = tabs.filter((t) => t.wv).length;
   const cells = box.querySelectorAll('b');
-  cells[0].textContent = m.memMB + ' МБ';
+  cells[0].textContent = (m.exact ? '' : '≈ ') + m.memMB + ' МБ';
+  cells[0].nextElementSibling.textContent = m.exact ? 'память (как в диспетчере задач)' : 'память, с общими страницами';
   cells[1].textContent = `${loaded} из ${tabs.length}`;
   cells[2].textContent = m.processes;
 }

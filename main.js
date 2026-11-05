@@ -272,9 +272,13 @@ nativeTheme.on('updated', () => send('theme:system', nativeTheme.shouldUseDarkCo
 
 ipcMain.handle('app:metrics', () => {
   const list = app.getAppMetrics();
-  const kb = list.reduce((sum, m) => sum + ((m.memory && m.memory.workingSetSize) || 0), 0);
+  // Working set counts shared pages (Chromium's DLLs, GPU buffers) once per process, so summing it
+  // over ~10 processes adds the same memory up many times. Private memory is what each process
+  // really holds on its own — the Windows Task Manager shows the same thing. (privateBytes is Windows-only.)
+  const priv = list.every((m) => m.memory && m.memory.privateBytes != null);
+  const kb = list.reduce((sum, m) => sum + ((m.memory && (priv ? m.memory.privateBytes : m.memory.workingSetSize)) || 0), 0);
   const cpu = list.reduce((sum, m) => sum + ((m.cpu && m.cpu.percentCPUUsage) || 0), 0);
-  return { memMB: Math.round(kb / 1024), processes: list.length, cpu: Math.round(cpu) };
+  return { memMB: Math.round(kb / 1024), exact: priv, processes: list.length, cpu: Math.round(cpu) };
 });
 ipcMain.handle('app:relaunch', () => { app.relaunch(); app.quit(); });
 ipcMain.handle('app:version', () => app.getVersion());
