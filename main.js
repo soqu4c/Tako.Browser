@@ -20,7 +20,28 @@ let win = null;
 
 // Read before the app is ready: some switches only work at startup
 const boot = (() => { try { return JSON.parse(fs.readFileSync(path.join(app.getPath('userData'), 'settings.json'), 'utf8')); } catch { return {}; } })();
-if (boot.hwAccel === false) app.disableHardwareAcceleration();
+
+// ---------- startup log: %APPDATA%\Tako.Browser\logs\main.log
+const logDir = () => path.join(app.getPath('userData'), 'logs');
+function log(...parts) {
+  try {
+    fs.mkdirSync(logDir(), { recursive: true });
+    const f = path.join(logDir(), 'main.log');
+    try { if (fs.statSync(f).size > 1024 * 1024) fs.renameSync(f, f + '.old'); } catch { /* first run */ }
+    fs.appendFileSync(f, `[${new Date().toISOString()}] ${parts.map((p) => (p instanceof Error ? p.stack : typeof p === 'string' ? p : JSON.stringify(p))).join(' ')}\n`);
+  } catch { /* nowhere to write */ }
+}
+process.on('uncaughtException', (e) => log('uncaught exception:', e));
+process.on('unhandledRejection', (e) => log('unhandled rejection:', e));
+log(`start ${app.getVersion()} on ${process.platform} ${os.release()}, electron ${process.versions.electron}`);
+
+// If the last start never got as far as a working window, this one starts in safe mode:
+// no GPU, no restored tabs. The flag is removed as soon as the interface reports it is up.
+const startFlag = path.join(app.getPath('userData'), 'starting.flag');
+let safeMode = process.argv.includes('--safe-mode');
+try { if (fs.existsSync(startFlag)) { safeMode = true; log('previous start did not finish — safe mode'); } } catch { /* ignore */ }
+try { fs.mkdirSync(app.getPath('userData'), { recursive: true }); fs.writeFileSync(startFlag, String(Date.now())); } catch { /* ignore */ }
+if (boot.hwAccel === false || safeMode) app.disableHardwareAcceleration();
 const xray = new vpn.Xray();
 let activeProfile = null; // the profile the browser session is routed through, for proxy auth
 let proxyConfig = { mode: 'system' }; // applied to every browser session, private ones too
@@ -105,7 +126,19 @@ function createWindow() {
   });
   win.webContents.on('will-navigate', (e) => e.preventDefault());
   win.loadFile(path.join(__dirname, 'index.html'));
-  win.once('ready-to-show', () => win.show());
+  win.once('ready-to-show', () => { log('window ready'); win.show(); });
+  // ready-to-show needs the first paint; if the interface is stuck, show the window anyway
+  setTimeout(() => { if (win && !win.isDestroyed() && !win.isVisible()) { log('ready-to-show did not come in 6 s, showing the window'); win.show(); } }, 6000);
+  let reloads = 0;
+  win.webContents.on('render-process-gone', (_e, d) => {
+    log('interface process gone:', d);
+    if (d.reason !== 'clean-exit' && reloads++ < 2 && win && !win.isDestroyed()) { win.webContents.reload(); win.show(); }
+  });
+  win.webContents.on('unresponsive', () => log('interface not responding'));
+  win.webContents.on('responsive', () => log('interface responding again'));
+  win.webContents.on('preload-error', (_e, p, err) => log('preload error', p, err));
+  win.webContents.on('did-fail-load', (_e, code, desc) => log('interface failed to load', code, desc));
+  win.webContents.on('console-message', (_e, level, message, line, source) => { if (level >= 3) log(`interface error: ${message} (${path.basename(source || '')}:${line})`); });
   win.on('close', () => {
     const s = readJson('settings.json', {});
     s.maximized = win.isMaximized();
@@ -288,6 +321,12 @@ ipcMain.handle('app:metrics', () => {
   return { memMB: Math.round(kb / 1024), exact: priv, processes: list.length, cpu: Math.round(cpu) };
 });
 ipcMain.handle('search:theme', (_e, theme, region) => { searchTheme = theme || {}; if (region) searchRegion = region; });
+ipcMain.handle('app:ready', () => {
+  log('interface ready');
+  try { fs.unlinkSync(startFlag); } catch { /* already gone */ }
+  return { safeMode };
+});
+ipcMain.handle('app:logs', () => { fs.mkdirSync(logDir(), { recursive: true }); shell.openPath(logDir()); });
 ipcMain.handle('app:relaunch', () => { app.relaunch(); app.quit(); });
 ipcMain.handle('app:version', () => app.getVersion());
 
@@ -650,8 +689,10 @@ if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
   app.on('second-instance', (_e, argv) => {
-    if (!win) return;
+    log('second launch');
+    if (!win || win.isDestroyed()) { createWindow(); return; }
     if (win.isMinimized()) win.restore();
+    if (!win.isVisible()) win.show();
     win.focus();
     const url = argv.find((a) => /^https?:\/\//.test(a));
     if (url) send('tab:open', { url });
@@ -664,19 +705,26 @@ if (!app.requestSingleInstanceLock()) {
       adblock = new AdBlock(userDir(), (url) => net.fetch(url), (wcId, n) => send('adblock:count', { wcId, n }));
       adblock.enabled = boot.adblock ? boot.adblock.enabled !== false : true;
       adblock.allow = new Set((boot.adblock && boot.adblock.allow) || []);
-      adblock.load(false).then(() => send('adblock:ready', adblock.status()));
+      // compiling the filter lists takes the main thread for a while: only after the window is up
+      setTimeout(() => adblock.load(false).then((r) => { log('adblock', r); send('adblock:ready', adblock.status()); }).catch((e) => log('adblock failed', e)), 4000);
     } catch (e) {
       console.error('adblock disabled:', e.message);
     }
     if (boot.dns) applyDns(boot.dns, boot.dnsCustom);
-    setupSession(PARTITION);
-    setupSession(PRIVATE);
+    log('app ready');
+    for (const step of [() => setupSession(PARTITION), () => setupSession(PRIVATE)]) {
+      try { step(); } catch (e) { log('session setup failed:', e); }
+    }
     createWindow();
-    setupUpdates();
+    log('window created');
+    try { setupUpdates(); } catch (e) { log('updates failed:', e); }
     const url = process.argv.find((a) => /^https?:\/\//.test(a));
     if (url) win.webContents.once('did-finish-load', () => setTimeout(() => send('tab:open', { url }), 400));
   });
 
   app.on('window-all-closed', () => app.quit());
-  app.on('will-quit', () => xray.stop());
+  app.on('will-quit', () => {
+    xray.stop();
+    log('quit');
+  });
 }

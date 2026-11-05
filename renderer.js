@@ -1461,6 +1461,7 @@ const SETTINGS_PANELS = {
       ${row('Ширина панели заметок', '', range('notesWidth', 280, 560, ' px'))}
       ${row('Экспорт заметок', `Всего заметок: ${notes.length}. Сохраняются в один файл Markdown`, '<button class="btn small" id="notes-export">Сохранить в файл…</button>')}
       ${row('Очистить кэш', 'Картинки и файлы сайтов, сохранённые для скорости', '<button class="btn small" id="clear-cache">Очистить</button>')}
+      ${row('Журнал работы', 'Если браузер не запускается или падает — пришлите этот файл', '<button class="btn small" id="open-logs">Открыть папку</button>')}
       ${row('Очистить cookies и данные сайтов', 'Вы выйдете из аккаунтов на всех сайтах', '<button class="btn small danger" id="clear-cookies">Очистить</button>')}
       <h4>Настройки</h4>
       ${row('Экспорт и импорт', 'Все настройки внешнего вида, вкладок и VPN в одном файле — удобно перенести на другой компьютер', '<button class="btn small" id="set-export">Сохранить…</button><button class="btn small" id="set-import">Загрузить…</button>')}
@@ -1682,6 +1683,8 @@ function bindSettings(p) {
   // Data section
   const ne = $('#notes-export', p);
   if (ne) ne.onclick = async () => { if (await T.exportNotes('Заметки Tako.md', notesMarkdown())) toast('Заметки сохранены'); };
+  const ol = $('#open-logs', p);
+  if (ol) ol.onclick = () => T.openLogs();
   const cc = $('#clear-cache', p);
   if (cc) cc.onclick = async () => { await T.clearData('cache'); toast('Кэш очищен'); };
   const ck = $('#clear-cookies', p);
@@ -1949,7 +1952,9 @@ async function init() {
   if (S.vpn.enabled) await vpnApply(false);
   if (S.vpn.enabled && vpnState.error) toast(vpnState.error, { err: true, ms: 9000 });
 
-  const sess = S.restore ? await T.store.get('session', null) : null;
+  const { safeMode } = await T.ready();
+  if (safeMode) toast('Прошлый запуск не удался — браузер открыт в безопасном режиме: без видеоускорения и без восстановления вкладок. Если всё работает, просто перезапустите его.', { ms: 12000 });
+  const sess = S.restore && !safeMode ? await T.store.get('session', null) : null;
   if (sess && Array.isArray(sess.tabs) && sess.tabs.length) {
     // with lazy restore only the active tab loads; the rest wait for a click
     groups = Array.isArray(sess.groups) ? sess.groups.filter((g) => sess.tabs.some((t) => t.group === g.id)) : [];

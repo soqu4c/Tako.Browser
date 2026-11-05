@@ -45,6 +45,8 @@ contextBridge.exposeInMainWorld('tako', {
   onSystemTheme: on('theme:system'),
   themeSource: (src) => ipcRenderer.invoke('theme:source', src),
   version: () => ipcRenderer.invoke('app:version'),
+  ready: () => ipcRenderer.invoke('app:ready'),
+  openLogs: () => ipcRenderer.invoke('app:logs'),
   searchTheme: (theme, region) => ipcRenderer.invoke('search:theme', theme, region),
   setKeys: (list) => ipcRenderer.invoke('keys:set', list),
   downloadAction: (id, action) => ipcRenderer.invoke('download:action', id, action),
