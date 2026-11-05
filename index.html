@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src * data: blob: file:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'none'">
+<title>Tako.Browser</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="tabs-top">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-fwd" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-reload" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></g></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></g></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></g></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></g></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-shield-on" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z" fill="currentColor" opacity=".2"/><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8.5 12l2.5 2.5 4.5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-note" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M15 3v5h5M8 13h8M8 17h5"/></g></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></g></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></g></symbol>
+    <symbol id="i-palette" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.8 1.7-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7H16a5 5 0 0 0 5-5C21 6.5 17 3 12 3z"/><circle cx="7.5" cy="11.5" r="1"/><circle cx="10" cy="7.5" r="1"/><circle cx="14.5" cy="7.5" r="1"/></g></symbol>
+    <symbol id="i-tabs" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 4v5"/></g></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></g></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></g></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></g></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v4M8 3h8l-1 6 3 3v2H6v-2l3-3z"/></g></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></g></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></g></symbol>
+    <symbol id="i-sidebar" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></g></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></g></symbol>
+    <symbol id="i-quote" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h13"/></g></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+<div id="bg"><div id="bg-img"></div><div id="bg-blobs"><i></i><i></i><i></i></div><div id="bg-dim"></div></div>
+
+<header id="titlebar">
+  <img class="logo" src="assets/logo.png" alt="">
+  <span class="app-name">Tako<span class="app-suffix">.browser</span></span>
+  <span class="page-title" id="page-title"></span>
+  <div class="slot" id="slot-top"></div>
+  <div class="drag-fill"></div>
+</header>
+
+<div id="app">
+  <div class="slot slot-v" id="slot-left"></div>
+
+  <aside id="notes" hidden>
+    <div class="notes-head">
+      <b>Заметки</b>
+      <div class="seg tiny" id="notes-filter">
+        <button data-f="all" class="on">Все</button>
+        <button data-f="site">Этот сайт</button>
+      </div>
+      <span class="flex"></span>
+      <button class="icon sm" id="notes-add" title="Новая заметка"><svg class="i"><use href="#i-plus"/></svg></button>
+      <button class="icon sm" id="notes-close" title="Закрыть"><svg class="i"><use href="#i-x"/></svg></button>
+    </div>
+    <div id="notes-list-view">
+      <label class="search-field"><svg class="i"><use href="#i-search"/></svg><input id="notes-search" placeholder="Поиск по заметкам"></label>
+      <div id="notes-list"></div>
+    </div>
+    <div id="note-editor" hidden>
+      <div class="ne-top">
+        <button class="btn ghost small" id="ne-back"><svg class="i"><use href="#i-back"/></svg>Все заметки</button>
+        <span class="flex"></span>
+        <div class="ne-colors" id="ne-colors"></div>
+      </div>
+      <input id="ne-title" class="ne-title" placeholder="Без названия" spellcheck="false">
+      <textarea id="ne-text" placeholder="Пишите что угодно… Заметка сохраняется сама."></textarea>
+      <div class="ne-site" id="ne-site"></div>
+      <div class="ne-actions">
+        <button class="btn small" id="ne-link" title="Привязать к открытой странице"><svg class="i"><use href="#i-link"/></svg><span>К этой странице</span></button>
+        <button class="btn small" id="ne-quote" title="Вставить выделенный на странице текст"><svg class="i"><use href="#i-quote"/></svg>Выделенное</button>
+        <span class="flex"></span>
+        <button class="icon sm danger" id="ne-delete" title="Удалить"><svg class="i"><use href="#i-trash"/></svg></button>
+      </div>
+      <div class="ne-meta" id="ne-meta"></div>
+    </div>
+  </aside>
+
+  <div id="center">
+    <main id="browser">
+      <div id="toolbar">
+        <button class="icon sm" id="nav-back" title="Назад (Alt+←)"><svg class="i"><use href="#i-back"/></svg></button>
+        <button class="icon sm" id="nav-fwd" title="Вперёд (Alt+→)"><svg class="i"><use href="#i-fwd"/></svg></button>
+        <button class="icon sm" id="nav-reload" title="Обновить (F5)"><svg class="i"><use href="#i-reload"/></svg></button>
+        <button class="icon sm" id="nav-home" title="Стартовая"><svg class="i"><use href="#i-home"/></svg></button>
+        <form id="omnibox" autocomplete="off">
+          <svg class="i" id="omni-icon"><use href="#i-search"/></svg>
+          <input id="address" spellcheck="false" placeholder="Поиск или адрес сайта">
+          <span id="zoom-chip" hidden></span>
+          <button type="button" class="omni-btn" id="vpn-site-chip" hidden title="Этот сайт открывается через VPN"><svg class="i"><use href="#i-shield-on"/></svg></button>
+          <button type="button" class="omni-btn" id="omni-dial" title="Добавить на стартовую (Ctrl+D)"><svg class="i"><use href="#i-pin"/></svg></button>
+        </form>
+        <button class="icon sm" id="btn-vpn" title="VPN"><svg class="i"><use href="#i-shield"/></svg></button>
+        <button class="icon sm" id="btn-notes" title="Заметки (Ctrl+N)"><svg class="i"><use href="#i-note"/></svg><b class="badge" id="notes-badge" hidden></b></button>
+        <button class="icon sm" id="btn-settings" title="Настройки (Ctrl+,)"><svg class="i"><use href="#i-gear"/></svg></button>
+        <div class="progress-line" id="progress"></div>
+      </div>
+
+      <div id="findbar" hidden>
+        <input id="find-input" placeholder="Найти на странице">
+        <span id="find-count"></span>
+        <button class="icon sm" id="find-prev"><svg class="i"><use href="#i-up"/></svg></button>
+        <button class="icon sm" id="find-next"><svg class="i"><use href="#i-down"/></svg></button>
+        <button class="icon sm" id="find-close"><svg class="i"><use href="#i-x"/></svg></button>
+      </div>
+
+      <div id="content">
+        <section id="start">
+          <div class="start-glow"></div>
+          <div class="start-inner">
+            <div id="clock"></div>
+            <img class="start-logo" src="assets/logo.png" alt="">
+            <h1 id="greeting">Куда отправимся?</h1>
+            <form id="start-search" autocomplete="off">
+              <svg class="i"><use href="#i-search"/></svg>
+              <input id="start-input" spellcheck="false" placeholder="Искать в Google или ввести адрес">
+              <button class="btn accent" type="submit">Найти</button>
+            </form>
+            <div id="dial"></div>
+          </div>
+          <button class="btn ghost small start-customize" id="start-customize"><svg class="i"><use href="#i-palette"/></svg>Настроить вид</button>
+        </section>
+        <div id="page-error" hidden>
+          <img src="assets/logo.png" alt="">
+          <h2>Страница не открылась</h2>
+          <p id="page-error-text"></p>
+          <div class="row"><button class="btn accent" id="page-error-retry">Попробовать снова</button><button class="btn" id="page-error-vpn">Открыть через VPN</button></div>
+        </div>
+      </div>
+    </main>
+    <div class="slot" id="slot-bottom"></div>
+  </div>
+
+  <div class="slot slot-v" id="slot-right"></div>
+</div>
+
+<nav id="tabstrip">
+  <div id="tabs"></div>
+  <button class="icon sm" id="tab-new" title="Новая вкладка (Ctrl+T)"><svg class="i"><use href="#i-plus"/></svg></button>
+</nav>
+
+<div id="popover" hidden></div>
+<div id="menu" hidden></div>
+<div id="toasts"></div>
+
+<dialog id="settings-dlg" class="wide">
+  <div class="set-layout">
+    <nav id="set-tabs"></nav>
+    <div class="set-main">
+      <div id="set-panel"></div>
+      <div class="actions"><button class="btn accent close-dlg">Готово</button></div>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dial-dlg">
+  <h2 id="dial-dlg-title">Новая плитка</h2>
+  <form method="dialog" id="dial-form">
+    <label class="field"><span class="label">Название</span><input class="text-input" id="dial-name" placeholder="Например, YouTube"></label>
+    <label class="field"><span class="label">Адрес</span><input class="text-input" id="dial-url" placeholder="youtube.com" required></label>
+    <div class="actions"><button type="button" class="btn ghost close-dlg">Отмена</button><button class="btn accent" value="ok">Сохранить</button></div>
+  </form>
+</dialog>
+
+<script src="renderer.js"></script>
+</body>
+</html>

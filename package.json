@@ -1,0 +1,44 @@
+{
+  "name": "tako-browser",
+  "version": "0.1.0",
+  "description": "Tako.Browser — браузер с кастомизацией, заметками и встроенным VPN",
+  "author": "takao",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "set ELECTRON_RUN_AS_NODE=&& electron .",
+    "dist": "electron-builder --win --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "com.takao.browser",
+    "productName": "Tako.Browser",
+    "executableName": "TakoBrowser",
+    "directories": { "output": "dist" },
+    "electronLanguages": ["ru", "en-US"],
+    "files": [
+      "main.js",
+      "vpn.js",
+      "preload.js",
+      "renderer.js",
+      "index.html",
+      "styles.css",
+      "assets/**"
+    ],
+    "extraResources": [{ "from": "bin", "to": "bin", "filter": ["**/*"] }],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Tako.Browser",
+      "artifactName": "Tako.Browser-Setup-${version}.${ext}"
+    }
+  }
+}
