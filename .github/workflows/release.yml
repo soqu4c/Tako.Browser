@@ -1,19 +1,32 @@
-# Builds the Windows installer and publishes it as a GitHub release when a v* tag is pushed.
-# Tags with a dash (v0.3.0-beta.1) become pre-releases.
+# Builds the Windows installer and publishes it as a GitHub release.
+# Runs for a pushed v* tag, for a commit whose message contains [release],
+# or by hand from the Actions tab. The tag is v<version from package.json>;
+# versions with a dash (0.3.0-beta.1) become pre-releases.
 name: Release
 
 on:
   push:
     tags: ['v*']
+    branches: ['**']
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
   windows:
+    if: github.event_name != 'push' || startsWith(github.ref, 'refs/tags/') || contains(github.event.head_commit.message, '[release]')
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Read the version
+        id: v
+        shell: bash
+        run: |
+          v=$(node -p "require('./package.json').version")
+          echo "tag=v$v" >> "$GITHUB_OUTPUT"
+          if [[ "$v" == *-* ]]; then echo "pre=true" >> "$GITHUB_OUTPUT"; else echo "pre=false" >> "$GITHUB_OUTPUT"; fi
 
       - uses: actions/setup-node@v4
         with:
@@ -39,8 +52,10 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
-          name: Tako.Browser ${{ github.ref_name }}
-          prerelease: ${{ contains(github.ref_name, '-') }}
+          tag_name: ${{ steps.v.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: Tako.Browser ${{ steps.v.outputs.tag }}
+          prerelease: ${{ steps.v.outputs.pre }}
           body_path: RELEASE_NOTES.md
           files: |
             dist/*.exe
