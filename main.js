@@ -1,10 +1,14 @@
 'use strict';
-const { app, BrowserWindow, ipcMain, session, Menu, clipboard, dialog, shell, net, nativeTheme, webContents } = require('electron');
+const { app, BrowserWindow, ipcMain, session, Menu, clipboard, dialog, shell, net, nativeTheme, webContents, protocol } = require('electron');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { pathToFileURL } = require('url');
 const vpn = require('./vpn');
+const search = require('./search');
+
+// tako://search — results page drawn in the browser's own style (see search.js)
+protocol.registerSchemesAsPrivileged([{ scheme: 'tako', privileges: { standard: true, secure: true, supportFetchAPI: true } }]);
 
 app.setName('Tako.Browser');
 const PARTITION = 'persist:tako';
@@ -21,6 +25,8 @@ const xray = new vpn.Xray();
 let activeProfile = null; // the profile the browser session is routed through, for proxy auth
 let proxyConfig = { mode: 'system' }; // applied to every browser session, private ones too
 let adblock = null;
+let searchTheme = {}; // colours of the interface, sent by the renderer
+let searchRegion = boot.searchRegion || 'ru-ru';
 const sessions = new Set();
 
 // ---------- tiny JSON store
@@ -127,6 +133,7 @@ function setupSession(partition) {
   ses.setUserAgent(ua);
   app.userAgentFallback = ua;
   ses.setProxy(proxyConfig).catch(() => {});
+  ses.protocol.handle('tako', (req) => search.handle(req, ses, searchTheme, searchRegion));
   if (adblock) adblock.attach(ses);
 
   ses.on('will-download', (_e, item) => {
@@ -280,6 +287,7 @@ ipcMain.handle('app:metrics', () => {
   const cpu = list.reduce((sum, m) => sum + ((m.cpu && m.cpu.percentCPUUsage) || 0), 0);
   return { memMB: Math.round(kb / 1024), exact: priv, processes: list.length, cpu: Math.round(cpu) };
 });
+ipcMain.handle('search:theme', (_e, theme, region) => { searchTheme = theme || {}; if (region) searchRegion = region; });
 ipcMain.handle('app:relaunch', () => { app.relaunch(); app.quit(); });
 ipcMain.handle('app:version', () => app.getVersion());
 

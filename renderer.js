@@ -100,7 +100,7 @@ const DEFAULTS = {
   toolbar: { nav: true, reload: true, home: true, dialpin: true, vpn: true, notes: true, settings: true },
   showAppName: true, notesSide: 'auto',
   tabsPos: 'top', tabsCompact: false, tabsWidth: 240, tabMax: 210, tabClose: true, tabColorMode: 'accent', newTabNext: true, restore: true,
-  engine: 'google', engineUrl: '', greeting: 'Куда отправимся?', clock: true,
+  engine: 'google', engineUrl: '', searchStyle: 'tako', searchRegion: 'ru-ru', greeting: 'Куда отправимся?', clock: true,
   start: { logo: true, search: true, dial: true, customize: true, align: 'center', valign: 'center' },
   dial: DEFAULT_DIAL,
   notesWidth: 340, notesOpen: false,
@@ -239,12 +239,21 @@ function accentPair() {
   return ACCENTS[S.accent] || ACCENTS.salsa;
 }
 
+const TAKO_SEARCH = 'tako://search/?q=';
+const isTakoSearch = (url) => /^tako:\/\/search\//.test(url || '');
+
+/** Where a query goes: our own results page, or the search engine's site */
 function searchUrl(q) {
+  if (S.searchStyle === 'tako') return TAKO_SEARCH + encodeURIComponent(q);
+  return engineUrl(q);
+}
+
+function engineUrl(q) {
   if (S.engine === 'custom' && /%s/.test(S.engineUrl || '')) return S.engineUrl.replace(/%s/g, encodeURIComponent(q));
   const [, base] = ENGINES[S.engine] && ENGINES[S.engine][1] ? ENGINES[S.engine] : ENGINES.google;
   return base + encodeURIComponent(q);
 }
-const engineName = () => (S.engine === 'custom' ? 'поисковике' : (ENGINES[S.engine] || ENGINES.google)[0]);
+const engineName = () => (S.searchStyle === 'tako' ? 'интернете' : S.engine === 'custom' ? 'поисковике' : (ENGINES[S.engine] || ENGINES.google)[0]);
 
 function backgroundCss() {
   const [a, b] = accentPair();
@@ -362,9 +371,23 @@ function applyAppearance() {
   tickClock(true);
   if (lastTheme !== S.theme) { lastTheme = S.theme; renderDial(); }
   runHooks('appearance');
+  sendSearchTheme();
   renderTabs();
 }
 let lastTheme = null;
+
+// the search results page (tako://search) is drawn with the same colours as the browser
+function sendSearchTheme() {
+  const cs = getComputedStyle(document.documentElement);
+  const v = (n) => cs.getPropertyValue(n).trim();
+  const [a, b] = accentPair();
+  T.searchTheme({
+    bg: v('--bg-solid'), panel: `rgb(${v('--panel-rgb')})`, surface: v('--surface-2'), text: v('--text'), soft: v('--soft'), muted: v('--muted'),
+    line: v('--line-2'), accent: a, accent2: b, onAccent: v('--on-accent'), radius: S.radius,
+    font: getComputedStyle(document.body).fontFamily, serif: v('--serif') || 'Georgia, serif',
+    hand: S.theme === 'handmade', light: isLight(), engine: ENGINES[S.engine] && S.engine !== 'custom' ? S.engine : 'google',
+  }, S.searchRegion);
+}
 
 function applyLayout() {
   const pos = ['top', 'bottom', 'left', 'right'].includes(S.tabsPos) ? S.tabsPos : 'top';
@@ -392,6 +415,7 @@ function hostOf(url) {
 
 function displayUrl(url) {
   if (!url) return '';
+  if (isTakoSearch(url)) { try { return new URL(url).searchParams.get('q') || ''; } catch { return ''; } }
   let u = url;
   try { u = decodeURI(url); } catch { /* keep as is */ }
   return u.replace(/^https:\/\//, '').replace(/^([^/?#]+)\/$/, '$1');
@@ -765,7 +789,7 @@ function updateToolbar() {
   if (document.activeElement !== addr) addr.value = t && t.url ? displayUrl(t.url) : '';
   const secure = !!(t && t.url && t.url.startsWith('https://'));
   $('#omnibox').classList.toggle('secure', secure);
-  $('#omni-icon').innerHTML = `<use href="#i-${t && t.url ? (secure ? 'lock' : 'globe') : 'search'}"/>`;
+  $('#omni-icon').innerHTML = `<use href="#i-${t && t.url && !isTakoSearch(t.url) ? (secure ? 'lock' : 'globe') : 'search'}"/>`;
   const host = t && t.url ? hostOf(t.url) : '';
   $('#vpn-site-chip').hidden = !(host && siteViaVpn(host));
   $('#omni-dial').hidden = !host;
@@ -1399,6 +1423,8 @@ const SETTINGS_PANELS = {
   },
   start: () => `<h3>Стартовая и поиск</h3>
       ${row('Поисковая система', '', seg('engine', Object.entries(ENGINES).map(([k, [n]]) => [k, n])), 'col')}
+      ${row('Страница результатов', S.searchStyle === 'tako' ? 'Результаты DuckDuckGo, нарисованные в стиле браузера — те же цвета, шрифт и тема. Картинки, видео и карты открываются в поисковике, выбранном выше' : 'Открывается обычный сайт поисковика', seg('searchStyle', [['tako', 'В стиле браузера'], ['engine', 'Сайт поисковика']]), 'col')}
+      ${S.searchStyle === 'tako' ? row('Регион поиска', '', seg('searchRegion', [['ru-ru', 'Россия'], ['ua-uk', 'Украина'], ['kz-ru', 'Казахстан'], ['us-en', 'США'], ['wt-wt', 'Весь мир']])) : ''}
       ${S.engine === 'custom' ? `<div class="set-row col"><div class="txt"><div>Адрес поиска</div><small>Вместо запроса поставьте <code>%s</code>, например <code>https://search.brave.com/search?q=%s</code></small></div><input class="text-input mono" data-key="engineUrl" value="${esc(S.engineUrl)}" placeholder="https://example.com/search?q=%s"></div>` : ''}
       ${row('Что показывать', '', `<div class="chips">${chip('start.logo', 'Логотип')}${chip('clock', 'Часы')}${chip('start.search', 'Поиск')}${chip('start.dial', 'Плитки')}${chip('start.customize', '«Настроить вид»')}</div>`, 'col')}
       ${row('Выравнивание', '', seg('start.align', [['center', 'По центру'], ['left', 'Слева']]))}
@@ -1458,7 +1484,7 @@ const SETTINGS_PANELS = {
 };
 
 // options whose change shows or hides other rows in the panel
-const RERENDER = new Set(['font', 'engine', 'accent', 'textColor', 'perfMode']);
+const RERENDER = new Set(['font', 'engine', 'accent', 'textColor', 'perfMode', 'searchStyle']);
 let statsTimer = null;
 
 async function updateStats() {
@@ -1800,7 +1826,7 @@ function wire() {
     activate(n.id);
   };
   const addr = $('#address');
-  addr.addEventListener('focus', () => { const t = active(); addr.value = t && t.url ? t.url : ''; setTimeout(() => addr.select(), 0); });
+  addr.addEventListener('focus', () => { const t = active(); addr.value = t && t.url ? (isTakoSearch(t.url) ? displayUrl(t.url) : t.url) : ''; setTimeout(() => addr.select(), 0); });
   addr.addEventListener('blur', () => updateToolbar());
   $('#omnibox').onsubmit = (e) => { e.preventDefault(); navigate(addr.value); addr.blur(); };
   addr.addEventListener('keydown', (e) => { if (e.key === 'Escape') { addr.blur(); const t = active(); if (t && t.wv) t.wv.focus(); } });
