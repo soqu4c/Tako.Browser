@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src * data: blob: file:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src * data: blob: file:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'none'; media-src 'self' file: blob: data:">
 <title>Tako.Browser</title>
 <link rel="stylesheet" id="theme-css" href="styles.css">
 <link rel="stylesheet" href="common.css">
@@ -40,10 +40,30 @@
     <symbol id="i-external" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></g></symbol>
     <symbol id="i-quote" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h13"/></g></symbol>
     <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><g fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></g></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-star-on" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-history" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></g></symbol>
+    <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-mask" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18M6 10l1.5-5h9L18 10"/><circle cx="7.5" cy="16" r="3"/><circle cx="16.5" cy="16" r="3"/><path d="M10.5 16h3"/></g></symbol>
+    <symbol id="i-split" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/></g></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6c-2-1.5-5-2-8-2v14c3 0 6 .5 8 2 2-1.5 5-2 8-2V4c-3 0-6 .5-8 2z"/><path d="M12 6v14"/></g></symbol>
+    <symbol id="i-translate" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h9M8.5 3v2M11 5c-1 4-4 7-7 8M6 9c1.5 2 3.5 3.5 6 4"/><path d="M13 21l4-9 4 9M14.5 18h5"/></g></symbol>
+    <symbol id="i-pip" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="12" width="7" height="5" rx="1" fill="currentColor"/></g></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></g></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
+    <symbol id="i-block" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z"/><path d="M9 9l6 6M15 9l-6 6"/></g></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></g></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z" fill="currentColor"/></symbol>
+    <symbol id="i-keyboard" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></g></symbol>
+    <symbol id="i-lockkey" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z"/><circle cx="12" cy="11" r="2"/><path d="M12 13v3"/></g></symbol>
   </defs>
 </svg>
 
-<div id="bg"><div id="bg-img"></div><div id="bg-blobs"><i></i><i></i><i></i></div><div id="bg-grain"></div><div id="bg-dim"></div></div>
+<div id="bg"><div id="bg-img"></div><video id="bg-video" muted loop playsinline hidden></video><div id="bg-blobs"><i></i><i></i><i></i></div><div id="bg-grain"></div><div id="bg-dim"></div></div>
 
 <header id="titlebar">
   <img class="logo" src="assets/logo.png" alt="">
@@ -102,13 +122,21 @@
           <input id="address" spellcheck="false" placeholder="Поиск или адрес сайта">
           <span id="zoom-chip" hidden></span>
           <button type="button" class="omni-btn" id="vpn-site-chip" hidden title="Этот сайт открывается через VPN"><svg class="i"><use href="#i-shield-on"/></svg></button>
-          <button type="button" class="omni-btn" id="omni-dial" title="Добавить на стартовую (Ctrl+D)"><svg class="i"><use href="#i-pin"/></svg></button>
+          <button type="button" class="omni-btn" id="omni-block" hidden title="Блокировка рекламы"><svg class="i"><use href="#i-block"/></svg><b id="omni-block-n"></b></button>
+          <button type="button" class="omni-btn" id="omni-reader" hidden title="Режим чтения"><svg class="i"><use href="#i-book"/></svg></button>
+          <button type="button" class="omni-btn" id="omni-dial" title="Добавить на стартовую"><svg class="i"><use href="#i-pin"/></svg></button>
+          <button type="button" class="omni-btn" id="omni-star" title="В закладки (Ctrl+D)"><svg class="i"><use href="#i-star"/></svg></button>
+          <div id="suggest" hidden></div>
         </form>
         <button class="icon sm" id="btn-vpn" title="VPN"><svg class="i"><use href="#i-shield"/></svg></button>
         <button class="icon sm" id="btn-notes" title="Заметки (Ctrl+N)"><svg class="i"><use href="#i-note"/></svg><b class="badge" id="notes-badge" hidden></b></button>
+        <button class="icon sm" id="btn-downloads" title="Загрузки (Ctrl+J)" hidden><svg class="i"><use href="#i-download"/></svg><i class="dl-ring" id="dl-ring"></i></button>
         <button class="icon sm" id="btn-settings" title="Настройки (Ctrl+,)"><svg class="i"><use href="#i-gear"/></svg></button>
+        <button class="icon sm" id="btn-menu" title="Меню"><svg class="i"><use href="#i-menu"/></svg></button>
         <div class="progress-line" id="progress"></div>
       </div>
+
+      <div id="bmbar" hidden></div>
 
       <div id="findbar" hidden>
         <input id="find-input" placeholder="Найти на странице">
@@ -119,9 +147,22 @@
       </div>
 
       <div id="content">
+        <div id="split-divider" hidden><button class="icon sm" id="split-close" title="Закрыть разделение"><svg class="i"><use href="#i-x"/></svg></button></div>
+        <section id="reader" hidden>
+          <div class="reader-bar">
+            <svg class="i"><use href="#i-book"/></svg><b id="reader-site"></b>
+            <span class="flex"></span>
+            <button class="btn small ghost" id="reader-smaller" title="Мельче">A−</button>
+            <button class="btn small ghost" id="reader-bigger" title="Крупнее">A+</button>
+            <div class="seg tiny" id="reader-theme"><button data-v="app">Как браузер</button><button data-v="sepia">Сепия</button><button data-v="light">Светлая</button></div>
+            <button class="icon sm" id="reader-close" title="Закрыть (Esc)"><svg class="i"><use href="#i-x"/></svg></button>
+          </div>
+          <iframe id="reader-frame" sandbox="allow-popups allow-popups-to-escape-sandbox" title="Режим чтения"></iframe>
+        </section>
         <section id="start">
           <div class="start-glow"></div>
           <div class="start-inner">
+            <div class="private-banner"><svg class="i"><use href="#i-mask"/></svg><div><b>Приватная вкладка</b><small>История, cookies и данные сайтов не сохранятся — всё удалится, когда вы закроете последнюю приватную вкладку.</small></div></div>
             <div class="start-meta"><img class="start-logo" src="assets/logo.png" alt=""><span id="clock"></span></div>
             <h1 id="greeting">Куда отправимся?</h1>
             <svg class="squiggle" viewBox="0 0 240 14" preserveAspectRatio="none" aria-hidden="true"><path d="M3 9c14-5 22 4 36 1s19-7 33-4 18 6 32 3 20-6 34-3 17 5 31 2 21-5 35-2 22 4 33 1"/></svg>
@@ -150,11 +191,13 @@
 </div>
 
 <nav id="tabstrip">
+  <button id="ws-btn" title="Пространства"><i class="ws-dot"></i><span id="ws-name"></span></button>
   <div id="tabs"></div>
   <button class="icon sm" id="tab-new" title="Новая вкладка (Ctrl+T)"><svg class="i"><use href="#i-plus"/></svg></button>
 </nav>
 
 <div id="popover" hidden></div>
+<div id="tab-preview" hidden><img alt=""><b></b><small></small></div>
 <div id="menu" hidden></div>
 <div id="toasts"></div>
 
@@ -177,6 +220,29 @@
   </form>
 </dialog>
 
+<dialog id="ask-dlg">
+  <h2 id="ask-title"></h2>
+  <form method="dialog" id="ask-form">
+    <div id="ask-fields"></div>
+    <div class="actions"><button type="button" class="btn ghost close-dlg">Отмена</button><button class="btn accent" value="ok" id="ask-ok">Готово</button></div>
+  </form>
+</dialog>
+
+<dialog id="history-dlg" class="list-dlg">
+  <div class="dlg-head"><h2>История</h2><span class="flex"></span><button class="icon sm close-dlg" title="Закрыть"><svg class="i"><use href="#i-x"/></svg></button></div>
+  <label class="search-field"><svg class="i"><use href="#i-search"/></svg><input id="history-search" placeholder="Поиск по истории"></label>
+  <div class="list-body" id="history-list"></div>
+  <div class="actions"><button class="btn small" id="history-clear-hour">Удалить за последний час</button><button class="btn small" id="history-clear-day">За сегодня</button><span class="spacer flex"></span><button class="btn small danger" id="history-clear-all">Очистить всю историю</button></div>
+</dialog>
+
+<dialog id="bm-dlg" class="list-dlg">
+  <div class="dlg-head"><h2>Закладки</h2><span class="flex"></span><button class="icon sm close-dlg" title="Закрыть"><svg class="i"><use href="#i-x"/></svg></button></div>
+  <label class="search-field"><svg class="i"><use href="#i-search"/></svg><input id="bm-search" placeholder="Поиск по закладкам"></label>
+  <div class="list-body" id="bm-list"></div>
+  <div class="actions"><span class="import-label">Импорт:</span><button class="btn small" data-import="chrome">Chrome</button><button class="btn small" data-import="yandex">Яндекс</button><button class="btn small" data-import="edge">Edge</button><button class="btn small" data-import="brave">Brave</button><button class="btn small" data-import="file">Из файла…</button></div>
+</dialog>
+
 <script src="renderer.js"></script>
+<script src="features.js"></script>
 </body>
 </html>

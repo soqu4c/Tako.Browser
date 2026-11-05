@@ -1,6 +1,6 @@
 {
   "name": "tako-browser",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Tako.Browser — браузер с кастомизацией, заметками и встроенным VPN",
   "author": "takao",
   "main": "main.js",
@@ -17,11 +17,18 @@
     "appId": "com.takao.browser",
     "productName": "Tako.Browser",
     "executableName": "TakoBrowser",
-    "directories": { "output": "dist" },
-    "electronLanguages": ["ru", "en-US"],
+    "directories": {
+      "output": "dist"
+    },
+    "electronLanguages": [
+      "ru",
+      "en-US"
+    ],
     "files": [
       "main.js",
       "vpn.js",
+      "features.js",
+      "adblock.js",
       "preload.js",
       "renderer.js",
       "index.html",
@@ -30,9 +37,24 @@
       "common.css",
       "assets/**"
     ],
-    "extraResources": [{ "from": "bin", "to": "bin", "filter": ["**/*"] }],
+    "extraResources": [
+      {
+        "from": "bin",
+        "to": "bin",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "icon": "assets/icon.png"
     },
     "nsis": {
@@ -41,6 +63,18 @@
       "createDesktopShortcut": true,
       "shortcutName": "Tako.Browser",
       "artifactName": "Tako.Browser-Setup-${version}.${ext}"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "soqu4c",
+        "repo": "Tako.Browser"
+      }
+    ]
+  },
+  "dependencies": {
+    "@ghostery/adblocker-electron": "^2.20.3",
+    "@mozilla/readability": "^0.6.0",
+    "electron-updater": "^6.3.9"
   }
 }
