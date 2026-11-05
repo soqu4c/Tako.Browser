@@ -243,6 +243,8 @@ function applyAppearance() {
     for (const v of ['--text', '--soft', '--muted']) root.removeProperty(v);
   }
   root.setProperty('--r', S.radius + 'px');
+  // buttons and fields follow the same slider, a little less rounded than the panels
+  root.setProperty('--radius', Math.round(S.radius * 0.72) + 'px');
   root.setProperty('--tabs-w', S.tabsWidth + 'px');
   root.setProperty('--notes-w', S.notesWidth + 'px');
   root.setProperty('--tab-max', S.tabMax + 'px');
@@ -272,6 +274,8 @@ function applyAppearance() {
 
   const font = S.font === 'custom' ? (S.fontCustom ? `"${S.fontCustom.replace(/"/g, '')}", system-ui, sans-serif` : '') : (FONTS[S.font] || FONTS.default)[1];
   document.body.style.fontFamily = font;
+  // the hand-made theme sets headings in a serif of its own; a chosen font wins there too
+  if (font) root.setProperty('--serif', font); else root.removeProperty('--serif');
   const zoom = clamp(S.uiScale, 70, 150) / 100;
   T.win.uiZoom(zoom);
   const titlebar = S.density === 'compact' ? 34 : S.density === 'large' ? 46 : 40;
@@ -1233,7 +1237,7 @@ const SETTINGS_PANELS = {
       ${row('Ширина боковой панели', '', range('tabsWidth', 170, 380, ' px'))}
       ${row('Ширина вкладки', 'Для вкладок сверху и снизу', range('tabMax', 110, 340, ' px', 10))}
       ${row('Крестик на вкладках', 'Без него вкладка закрывается средней кнопкой мыши или Ctrl+W', sw('tabClose'))}
-      ${row('Цвет вкладок', 'Свой цвет каждой вкладке можно задать правой кнопкой по ней', seg('tabColorMode', [['accent', 'Акцент'], ['site', 'Цвет сайта'], ['neutral', 'Нейтральный']]))}
+      ${row('Цвет вкладок', 'Свой цвет каждой вкладке можно задать правой кнопкой по ней', seg('tabColorMode', [['accent', 'Акцент'], ['site', 'Цвет сайта'], ['neutral', 'Нейтральный']]), 'col')}
       ${row('Открывать новые вкладки рядом с текущей', '', sw('newTabNext'))}
       ${row('Восстанавливать вкладки при запуске', '', sw('restore'))}`;
   },

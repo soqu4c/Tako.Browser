@@ -240,7 +240,7 @@ body.tabs-bottom #browser { border-bottom-left-radius: 0; }
   align-items: center;
   gap: 1px;
   padding: 5px 6px;
-  background: var(--panel-solid);
+  background: var(--panel);
   border-bottom: 1px solid var(--line-2);
 }
 #omnibox {
@@ -455,7 +455,7 @@ body.html-fs #browser { border-radius: 0; border: none; box-shadow: none; }
   transition: background .12s, color .12s, opacity .15s;
 }
 .tab:hover { color: var(--text); background: rgba(236, 230, 214, .05); }
-.tab.active { color: var(--text); background: var(--panel-solid); border-color: var(--line-2); }
+.tab.active { color: var(--text); background: var(--panel); border-color: var(--line-2); }
 .tab::before { content: ""; position: absolute; background: var(--tab-c); opacity: 0; }
 .tab.active::before, .tab.colored::before { opacity: 1; }
 .tab.colored:not(.active)::before { opacity: .55; }
@@ -504,7 +504,7 @@ body.tabs-left #tabstrip, body.tabs-right #tabstrip {
   align-items: stretch;
   padding: 6px;
   border-radius: var(--r);
-  background: var(--panel-solid);
+  background: var(--panel);
   border: 1px solid var(--line-2);
   box-shadow: var(--hard-lg);
   min-height: 0;
@@ -546,7 +546,7 @@ body.tabs-compact #tab-new::after { content: none !important; }
   flex-direction: column;
   min-height: 0;
   border-radius: var(--r);
-  background: var(--panel-solid);
+  background: var(--panel);
   border: 1px solid var(--line-2);
   box-shadow: var(--hard-lg);
   overflow: hidden;

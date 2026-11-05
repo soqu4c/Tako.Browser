@@ -52,7 +52,8 @@ body.density-large #toolbar { padding-top: 8px; padding-bottom: 8px; }
 body.density-large #omnibox { height: 40px; }
 body.density-large button.icon.sm { width: 36px; height: 36px; }
 
-body.tabs-top .tab:not(.pinned), body.tabs-bottom .tab:not(.pinned) { flex-basis: var(--tab-max) !important; }
+/* an explicit width (not just flex-basis) so the strip itself grows to fit the tabs */
+body.tabs-top .tab:not(.pinned), body.tabs-bottom .tab:not(.pinned) { width: var(--tab-max); flex: 0 1 auto !important; }
 
 /* ---------- what is shown */
 
@@ -115,3 +116,9 @@ body.theme-handmade .stat { border-radius: 3px; }
 .set-row .ctl { min-width: 0; }
 .set-row .seg { flex-wrap: wrap; max-width: 100%; }
 .set-row.col .ctl, .set-row.col .chips { justify-content: flex-start; }
+
+/* tabs on top get the whole free width of the title bar, so the tab width setting can take effect;
+   the empty part of the strip still drags the window */
+body.tabs-top #slot-top { flex: 1 1 auto; }
+body.tabs-top #tabstrip { flex: 1; min-width: 0; }
+body.tabs-top .drag-fill { flex: 0 0 24px; }
