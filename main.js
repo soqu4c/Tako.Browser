@@ -43,6 +43,13 @@ let safeMode = process.argv.includes('--safe-mode');
 try { if (fs.existsSync(startFlag)) { safeMode = true; log('previous start did not finish — safe mode'); } } catch { /* ignore */ }
 try { fs.mkdirSync(app.getPath('userData'), { recursive: true }); fs.writeFileSync(startFlag, String(Date.now())); } catch { /* ignore */ }
 if (boot.hwAccel === false || safeMode) app.disableHardwareAcceleration();
+// "minimum memory": Chromium's low-end-device mode (smaller caches, lighter rendering) and fewer
+// page processes — tabs share them instead of each getting its own
+if (boot.memMode === 'max') {
+  app.commandLine.appendSwitch('enable-low-end-device-mode');
+  app.commandLine.appendSwitch('renderer-process-limit', '4');
+  log('minimum memory mode');
+}
 const xray = new vpn.Xray();
 let activeProfile = null; // the profile the browser session is routed through, for proxy auth
 let proxyConfig = { mode: 'system' }; // applied to every browser session, private ones too
@@ -146,6 +153,8 @@ function createWindow() {
     writeJson('settings.json', s);
   });
   win.on('closed', () => { win = null; });
+  win.on('minimize', () => send('win:state', 'minimized'));
+  win.on('restore', () => send('win:state', 'restored'));
   win.on('enter-full-screen', () => send('fullscreen', true));
   win.on('leave-full-screen', () => send('fullscreen', false));
 }
@@ -358,6 +367,7 @@ ipcMain.handle('ext:install', (_e, input) => exts.install(input));
 ipcMain.handle('ext:unpacked', () => exts.loadUnpacked());
 ipcMain.handle('ext:remove', (_e, id) => exts.remove(id));
 ipcMain.handle('ext:update', () => exts.update());
+ipcMain.handle('ext:private', (_e, on) => exts.setPrivate(session.fromPartition(PRIVATE), on));
 ipcMain.handle('ext:select', (_e, wcId) => exts.selectTab(wcId));
 ipcMain.handle('ext:tab-created', (_e, reqId, wcId) => exts.tabCreated(reqId, wcId));
 ipcMain.handle('app:logs', () => { fs.mkdirSync(logDir(), { recursive: true }); shell.openPath(logDir()); });
@@ -756,6 +766,7 @@ if (!app.requestSingleInstanceLock()) {
         new Promise((r) => setTimeout(r, 5000)),
       ]);
     } catch (e) { log('extensions setup failed:', e); }
+    if (boot.extPrivate) exts.setPrivate(session.fromPartition(PRIVATE), true).catch((e) => log('private extensions', e));
     createWindow();
     log('window created');
     try { setupUpdates(); } catch (e) { log('updates failed:', e); }

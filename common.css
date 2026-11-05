@@ -371,3 +371,85 @@ body.light .ext-item { background: rgba(255, 255, 255, .6); }
 .ext-item .name div { color: var(--text); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ext-item .name small { color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ext-item .ext-ver { display: inline; font-weight: 400; color: var(--dim); }
+
+/* ---------- start page: everything the editor can change */
+body.hide-squiggle .squiggle { display: none !important; }
+body.hide-dialhead .dial-head { display: none !important; }
+body.show-dialhead.theme-tako .dial-head { display: flex; width: 100%; align-items: baseline; justify-content: space-between; margin: 26px 0 4px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+body.show-dialhead.theme-tako .dial-head span { font-weight: 700; color: var(--soft); }
+body.show-dialhead.theme-tako .dial-head small { color: var(--dim); font-size: 11.5px; }
+body.show-dialhead.theme-tako #dial { margin-top: 10px; }
+body.hide-dialhint .dial-head small { display: none !important; }
+body.start-gsize #greeting { font-size: var(--g-size) !important; }
+body.start-width .start-inner { width: min(var(--start-w), 100%) !important; }
+body.start-sheight #start-search { height: var(--search-h) !important; }
+body.search-round #start-search, body.search-round #start-search .btn { border-radius: 999px !important; }
+body.search-square #start-search { border-radius: 6px !important; }
+body.search-square #start-search .btn { border-radius: 4px !important; }
+
+#dial { --ts: 1; }
+body.tiles-size-s #dial { --ts: .82; }
+body.tiles-size-l #dial { --ts: 1.25; }
+body.tiles-cards #dial, body.tiles-pills #dial { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(calc(132px * var(--ts)), 1fr)) !important; gap: 8px !important; }
+body.tiles-cards #dial .tile, body.tiles-pills #dial .tile { width: auto !important; flex-direction: row !important; justify-content: flex-start !important; gap: 9px; padding: calc(8px * var(--ts)) 10px !important; background: var(--panel); border: 1px solid var(--line-2); border-radius: var(--radius) !important; font-size: calc(12.5px * var(--ts)); }
+body.tiles-pills #dial .tile { border-radius: 999px !important; }
+body.tiles-cards #dial .tile .ico, body.tiles-pills #dial .tile .ico, body.tiles-list #dial .tile .ico { width: calc(26px * var(--ts)) !important; height: calc(26px * var(--ts)) !important; border-radius: 7px !important; font-size: calc(12px * var(--ts)) !important; box-shadow: none !important; flex: none; }
+body.tiles-pills #dial .tile .ico { border-radius: 50% !important; }
+body.tiles-cards #dial .tile .ico img, body.tiles-pills #dial .tile .ico img, body.tiles-list #dial .tile .ico img { width: calc(17px * var(--ts)) !important; height: calc(17px * var(--ts)) !important; }
+body.tiles-icons #dial { display: flex !important; flex-wrap: wrap !important; justify-content: center !important; gap: 10px !important; }
+body.start-left.tiles-icons #dial { justify-content: flex-start !important; }
+body.tiles-icons #dial .tile { width: calc(100px * var(--ts)) !important; flex-direction: column !important; justify-content: flex-start !important; background: none; border: none !important; padding: 12px 6px 10px !important; box-shadow: none !important; font-size: calc(12px * var(--ts)); }
+body.tiles-icons #dial .tile:hover { background: var(--panel) !important; }
+body.tiles-icons #dial .tile .ico { width: calc(52px * var(--ts)) !important; height: calc(52px * var(--ts)) !important; border-radius: calc(16px * var(--ts)) !important; font-size: calc(20px * var(--ts)) !important; }
+body.tiles-icons #dial .tile .ico img { width: calc(26px * var(--ts)) !important; height: calc(26px * var(--ts)) !important; }
+body.tiles-list #dial { display: flex !important; flex-direction: column !important; gap: 4px !important; }
+body.tiles-list #dial .tile { width: 100% !important; flex-direction: row !important; justify-content: flex-start !important; gap: 12px; padding: calc(7px * var(--ts)) 12px !important; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius) !important; font-size: calc(13px * var(--ts)); }
+body:not(.theme-tako) .tile.add .ico, body.tiles-cards .tile.add .ico, body.tiles-pills .tile.add .ico, body.tiles-list .tile.add .ico { background: transparent !important; }
+body.tiles-cards .tile.add, body.tiles-pills .tile.add, body.tiles-list .tile.add { border-style: dashed !important; background: transparent !important; }
+
+/* the editor docked on the right of the start page */
+#start-editor {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  bottom: 12px;
+  width: 330px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  background: var(--glass, var(--surface));
+  border: 1px solid var(--line-2);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .55);
+  backdrop-filter: blur(24px) saturate(1.3);
+  animation: notes-in .25s ease-out;
+  overflow: hidden;
+}
+body.theme-handmade #start-editor { border-radius: var(--radius); box-shadow: var(--hard-lg); background: var(--surface); }
+.se-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 8px 10px 16px; border-bottom: 1px solid var(--line); }
+.se-head b { font-size: 14px; }
+.se-body { flex: 1; overflow-y: auto; padding: 4px 16px 16px; }
+.se-body h4 { margin: 16px 0 8px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.se-body .field { margin-bottom: 10px; }
+.se-body .chips { justify-content: flex-start; }
+.se-body .set-row { padding: 6px 0; gap: 10px; }
+.se-body .set-row .txt div { font-size: 12.5px; }
+.se-body input[type=range] { width: 120px; }
+.se-body .seg { flex-wrap: wrap; }
+.se-body .seg button { padding: 4px 9px; font-size: 12px; }
+.se-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+body.start-editing .start-inner { margin-right: 340px; }
+body.start-editing .start-customize { display: none; }
+
+/* colour tuning */
+.tune-dot { position: relative; width: 26px; height: 26px; border-radius: 50%; flex: none; cursor: pointer; border: 1.5px dashed var(--muted); background: conic-gradient(from 90deg, transparent 0 25%, rgba(128, 128, 128, .25) 0 50%, transparent 0 75%, rgba(128, 128, 128, .25) 0) 0 0 / 10px 10px; overflow: hidden; }
+.tune-dot.on { border: 2px solid var(--line-2); }
+.tune-dot.on::after { content: ""; position: absolute; inset: 0; background: var(--c); }
+.tune-dot input { position: absolute; inset: -6px; width: 200%; height: 200%; opacity: 0; cursor: pointer; z-index: 1; }
+.set-row .ctl input[type=range][data-tune-a] { width: 110px; }
+.set-row .ctl input[type=range]:disabled { opacity: .3; }
+
+/* the wave can be switched on in the Tako theme as well */
+body.show-squiggle.theme-tako .squiggle { display: block; width: 210px; height: 14px; margin: -6px auto 14px; overflow: visible; }
+body.show-squiggle.theme-tako.start-left .squiggle { margin-left: 2px; }
+body.show-squiggle.theme-tako .squiggle path { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }

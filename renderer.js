@@ -101,10 +101,14 @@ const DEFAULTS = {
   showAppName: true, notesSide: 'auto',
   tabsPos: 'top', tabsCompact: false, tabsWidth: 240, tabMax: 210, tabClose: true, tabColorMode: 'accent', newTabNext: true, restore: true,
   engine: 'google', engineUrl: '', searchStyle: 'tako', searchRegion: 'ru-ru', greeting: 'Куда отправимся?', clock: true,
-  start: { logo: true, search: true, dial: true, customize: true, align: 'center', valign: 'center' },
+  start: {
+    logo: true, search: true, dial: true, customize: true, align: 'center', valign: 'center',
+    squiggle: 'auto', head: 'auto', hint: true, title: 'Мои сайты', greetingSize: 0, width: 0, searchHeight: 0,
+    searchShape: 'auto', tileStyle: 'auto', tileSize: 'm',
+  },
   dial: DEFAULT_DIAL,
   notesWidth: 340, notesOpen: false,
-  perfMode: false, suspendAfter: 30, lazyRestore: true, hwAccel: true,
+  perfMode: false, suspendAfter: 30, lazyRestore: true, hwAccel: true, memMode: 'normal', suspendOnMinimize: false, extPrivate: false,
   vpn: { enabled: false, active: null, mode: 'all', domains: [], profiles: [], xrayPath: '' },
 };
 
@@ -1470,7 +1474,8 @@ const SETTINGS_PANELS = {
   perf: () => `<h3>Оптимизация</h3>
       <div class="set-row col"><div class="stats" id="perf-stats"><div class="stat"><b>…</b><small>память</small></div><div class="stat"><b>…</b><small>загружено вкладок</small></div><div class="stat"><b>…</b><small>процессов</small></div></div></div>
       ${row('Режим экономии', 'Без размытия, анимаций, живого фона и зерна. Меньше нагрузка на видеокарту и батарею', sw('perfMode'))}
-      ${row('Выгружать неактивные вкладки', 'Фоновая вкладка освобождает память и загружается заново, когда вы на неё вернётесь. Вкладки, где играет звук, не трогаются', seg('suspendAfter', [[0, 'Никогда'], [5, '5 мин'], [15, '15 мин'], [30, '30 мин'], [60, '1 час']]), 'col')}
+      ${row('Выгружать неактивные вкладки', 'Фоновая вкладка освобождает память и загружается заново, когда вы на неё вернётесь. Вкладки, где играет звук, не трогаются', seg('suspendAfter', [[0, 'Никогда'], [-1, 'Сразу'], [1, '1 мин'], [5, '5 мин'], [15, '15 мин'], [30, '30 мин'], [60, '1 час']]), 'col')}
+      ${row('Выгружать вкладки при сворачивании окна', 'Свернули браузер — фоновые вкладки освобождают память', sw('suspendOnMinimize'))}
       ${row('Выгрузить фоновые вкладки сейчас', '', '<button class="btn small" id="suspend-now">Выгрузить</button>')}
       ${row('Ленивая загрузка при запуске', 'Восстановленные вкладки загружаются только когда вы их откроете — запуск в разы быстрее', sw('lazyRestore'))}
       ${row('Аппаратное ускорение', 'Выключите, если видео дёргается или окно мерцает. Нужен перезапуск', `${sw('hwAccel')}<button class="btn small" id="relaunch">Перезапустить</button>`)}`,
@@ -1874,7 +1879,7 @@ function wire() {
 
   // start page
   $('#start-search').onsubmit = (e) => { e.preventDefault(); const v = $('#start-input').value; if (v.trim()) { navigate(v); $('#start-input').value = ''; } };
-  $('#start-customize').onclick = () => openSettings('look');
+  $('#start-customize').onclick = () => (window.toggleStartEditor ? window.toggleStartEditor() : openSettings('look'));
   $('#page-error-retry').onclick = () => { const t = active(); if (t && t.wv) { t.error = null; showTabContent(t); t.wv.loadURL(t.url).catch(() => {}); } };
   $('#page-error-vpn').onclick = async () => {
     const t = active();

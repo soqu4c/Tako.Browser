@@ -19,6 +19,7 @@ contextBridge.exposeInMainWorld('tako', {
   win: {
     overlay: (color, symbolColor, height) => ipcRenderer.invoke('win:overlay', color, symbolColor, height),
     uiZoom: (f) => webFrame.setZoomFactor(f),
+    clearCache: () => webFrame.clearCache(),
     relaunch: () => ipcRenderer.invoke('app:relaunch'),
     fullscreen: (on) => ipcRenderer.invoke('win:fullscreen', on),
   },
@@ -42,6 +43,8 @@ contextBridge.exposeInMainWorld('tako', {
   onCtx: on('ctx'),
   onDownload: on('download'),
   onFullscreen: on('fullscreen'),
+  onWinState: on('win:state'),
+  extPrivate: (on) => ipcRenderer.invoke('ext:private', on),
   onAdblockCount: on('adblock:count'),
   onAdblockReady: on('adblock:ready'),
   onUpdate: on('update'),

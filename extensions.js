@@ -68,7 +68,9 @@ async function setup(opts) {
       session: ses,
       createTab: createTabFor,
       selectTab: (wc) => send('ext:select-tab', wc.id),
-      removeTab: (wc) => send('ext:remove-tab', wc.id),
+      // the library also calls this when a page's webContents goes away — which happens when a tab is
+      // unloaded to save memory. Only a real chrome.tabs.remove (page still alive) closes the tab.
+      removeTab: (wc) => { if (!wc.isDestroyed()) send('ext:remove-tab', wc.id); },
       createWindow: async (details) => {
         const urls = [].concat((details && details.url) || []);
         for (const url of urls.length ? urls : ['about:blank']) await createTabFor({ url, active: true });
@@ -201,4 +203,20 @@ async function update() {
   try { await store.updateExtensions(ses); return { ok: true }; } catch (e) { return { ok: false, error: e.message }; }
 }
 
-module.exports = { setup, addTab, selectTab, contextItems, tabCreated, list, install, loadUnpacked, remove, update };
+/** The same extensions in private tabs (content scripts and blocking work; toolbar buttons stay with normal tabs) */
+async function setPrivate(privateSes, on) {
+  const papi = privateSes.extensions || privateSes;
+  if (!on) {
+    for (const e of papi.getAllExtensions()) papi.removeExtension(e.id);
+    return { ok: true };
+  }
+  if (!ses) return { ok: false };
+  const have = new Set(papi.getAllExtensions().map((e) => e.id));
+  for (const e of api().getAllExtensions()) {
+    if (have.has(e.id)) continue;
+    try { await papi.loadExtension(e.path, { allowFileAccess: true }); } catch (err) { log('private extension', e.name, err); }
+  }
+  return { ok: true };
+}
+
+module.exports = { setPrivate, setup, addTab, selectTab, contextItems, tabCreated, list, install, loadUnpacked, remove, update };

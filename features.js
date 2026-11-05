@@ -16,6 +16,7 @@
     translateTo: 'ru', translator: 'google',
     readerSize: 19, readerTheme: 'app',
     keys: {}, presets: [], splitRatio: 0.5, extButtons: true,
+    tune: {},
   });
   Object.assign(DEFAULTS.vpn, { autoFastest: false, subEvery: 24, subsAt: 0 });
   for (const k of ['mode', 'bmBar', 'translator', 'dns']) RERENDER.add(k);
@@ -759,7 +760,7 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
 
   // ===================================================================== light mode, saved looks, video background
 
-  const LOOK_KEYS = ['theme', 'mode', 'lightFrom', 'lightTo', 'accent', 'accentCustom', 'accent2Custom', 'panel', 'panelCustom', 'panelL', 'panelCustomL', 'panelAlpha', 'textColor', 'textColorL',
+  const LOOK_KEYS = ['tune', 'start', 'theme', 'mode', 'lightFrom', 'lightTo', 'accent', 'accentCustom', 'accent2Custom', 'panel', 'panelCustom', 'panelL', 'panelCustomL', 'panelAlpha', 'textColor', 'textColorL',
     'radius', 'motion', 'bg', 'bgL', 'bgImage', 'bgVideo', 'bgColor1', 'bgColor2', 'bgAngle', 'bgDim', 'bgBlur', 'bgAnim', 'bgGrain', 'font', 'fontCustom',
     'uiScale', 'density', 'gap', 'tabsPos', 'tabsCompact', 'tabsWidth', 'tabMax', 'tabClose', 'tabColorMode', 'customCss'];
   const lookNow = () => Object.fromEntries(LOOK_KEYS.map((k) => [k, structuredClone(S[k])]));
@@ -787,6 +788,8 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
   }
 
   HOOKS.appearance.push(() => {
+    applyTune();
+    applyStart();
     if (curBg() === 'video') document.body.classList.remove('bg-anim');
     syncBgVideo();
     if (S.mode === 'system') T.themeSource('system').then((dark) => { if (dark !== systemDark) { systemDark = dark; applyAppearance(); } });
@@ -938,6 +941,178 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
   SECTIONS.splice(SECTIONS.findIndex((x) => x[0] === 'vpn') + 1, 0, ['privacy', 'lockkey', 'Приватность и реклама']);
   SECTIONS.splice(SECTIONS.findIndex((x) => x[0] === 'about'), 0, ['keys', 'keyboard', 'Горячие клавиши']);
   SECTIONS.splice(SECTIONS.findIndex((x) => x[0] === 'privacy') + 1, 0, ['extensions', 'puzzle', 'Расширения']);
+  SECTIONS.splice(SECTIONS.findIndex((x) => x[0] === 'ui') + 1, 0, ['tune', 'palette', 'Цвета элементов']);
+
+  // ===================================================================== colour of every element
+
+  const TUNE = [
+    ['Панели', [
+      ['toolbar', 'Панель с адресной строкой', '#toolbar', 'background'],
+      ['omnibox', 'Адресная строка', '#omnibox', 'background'],
+      ['omniText', 'Текст адресной строки', '#address', 'color'],
+      ['icons', 'Значки на панели', '#toolbar button.icon, #toolbar .omni-btn', 'color'],
+      ['bmbar', 'Панель закладок', '#bmbar', 'background'],
+      ['notes', 'Панель заметок', '#notes', 'background'],
+      ['borders', 'Рамки панелей', '#browser, #notes, #toolbar, body:not(.tabs-top) #tabstrip', 'border-color'],
+    ]],
+    ['Вкладки', [
+      ['tabsBar', 'Полоса вкладок (снизу и сбоку)', 'body:not(.tabs-top) #tabstrip', 'background'],
+      ['tab', 'Текст вкладок', '.tab:not(.active)', 'color'],
+      ['tabHover', 'Вкладка под курсором', '.tab:not(.active):hover', 'background'],
+      ['tabActive', 'Активная вкладка', '.tab.active', 'background'],
+      ['tabActiveText', 'Текст активной вкладки', '.tab.active', 'color'],
+      ['tabLine', 'Полоска активной вкладки', '.tab.active::before', 'background'],
+    ]],
+    ['Стартовая страница', [
+      ['greeting', 'Приветствие', '#greeting', 'color'],
+      ['squiggle', 'Волнистая линия', '.squiggle path', 'stroke'],
+      ['clock', 'Часы', '#clock', 'color'],
+      ['clockBg', 'Фон часов', '#clock', 'background'],
+      ['search', 'Поле поиска', '#start-search', 'background'],
+      ['searchText', 'Текст в поле поиска', '#start-input', 'color'],
+      ['searchBorder', 'Рамка поля поиска', '#start-search', 'border-color'],
+      ['findBtn', 'Кнопка «Найти»', '#start-search .btn', 'background'],
+      ['findBtnText', 'Текст кнопки «Найти»', '#start-search .btn', 'color'],
+      ['tiles', 'Плитки сайтов', '#dial .tile:not(.add)', 'background'],
+      ['tilesText', 'Подписи плиток', '#dial .tile', 'color'],
+      ['tilesBorder', 'Рамка плиток', '#dial .tile', 'border-color'],
+      ['head', 'Заголовок «Мои сайты»', '.dial-head span', 'color'],
+    ]],
+    ['Окна и меню', [
+      ['menus', 'Меню и всплывающие окна', '#menu, #popover, #suggest, #tab-preview', 'background'],
+      ['menusText', 'Текст меню', '#menu button, #popover', 'color'],
+      ['dialogs', 'Окно настроек', 'dialog', 'background'],
+      ['dialogNav', 'Меню слева в настройках', '#set-tabs', 'background'],
+      ['toasts', 'Уведомления', '.toast', 'background'],
+    ]],
+  ];
+  const tuneRgba = (v) => { const [r, g, b] = rgbArr(v.c); return `rgba(${r}, ${g}, ${b}, ${(v.a ?? 100) / 100})`; };
+  function tuneCss() {
+    let css = '';
+    for (const [, items] of TUNE) for (const [key, , sel, prop] of items) {
+      const v = S.tune && S.tune[key];
+      if (v && v.c) css += `${sel} { ${prop}: ${tuneRgba(v)} !important; }\n`;
+    }
+    return css;
+  }
+  function applyTune() {
+    let el = $('#tune-css');
+    if (!el) { el = document.createElement('style'); el.id = 'tune-css'; $('#user-css').before(el); }
+    el.textContent = tuneCss();
+  }
+
+  SETTINGS_PANELS.tune = () => `<h3>Цвета элементов</h3>
+      <div class="set-row col"><small style="color:var(--muted)">Свой цвет и прозрачность для любой части интерфейса — поверх темы. Пустой кружок — цвет темы. Остальное поменять можно в «Свой CSS» (раздел «Интерфейс»).</small></div>
+      ${TUNE.map(([group, items]) => `<h4>${group}</h4>` + items.map(([key, label]) => {
+        const v = S.tune[key];
+        return row(label, '', `<label class="tune-dot ${v ? 'on' : ''}" style="${v ? `--c:${tuneRgba(v)}` : ''}"><input type="color" data-tune="${key}" value="${v ? v.c : '#808080'}"></label>
+          <input type="range" min="0" max="100" value="${v ? v.a ?? 100 : 100}" data-tune-a="${key}" ${v ? '' : 'disabled'} title="Непрозрачность">
+          <button class="icon sm" data-tune-reset="${key}" title="Цвет темы" ${v ? '' : 'disabled'}>${icon('x')}</button>`);
+      }).join('')).join('')}
+      <div class="actions"><button class="btn small ghost" id="tune-reset-all">Сбросить все цвета</button></div>`;
+
+  // ===================================================================== start page: live editor
+
+  const START_TEXT = { title: 'Мои сайты' };
+  // 'auto' — as the theme draws it: the hand-made theme has the wave and the header, Tako does not
+  const startShows = (key) => (S.start[key] === 'auto' ? S.theme === 'handmade' : !!S.start[key]);
+  function applyStart() {
+    const st = S.start;
+    const b = document.body.classList;
+    const start = $('#start');
+    b.toggle('hide-squiggle', !startShows('squiggle'));
+    b.toggle('show-squiggle', startShows('squiggle'));
+    b.toggle('show-dialhead', startShows('head'));
+    b.toggle('hide-dialhead', !startShows('head'));
+    b.toggle('hide-dialhint', !st.hint);
+    b.toggle('start-gsize', !!st.greetingSize);
+    b.toggle('start-width', !!st.width);
+    b.toggle('start-sheight', !!st.searchHeight);
+    for (const v of ['round', 'square']) b.toggle('search-' + v, st.searchShape === v);
+    for (const v of ['cards', 'pills', 'icons', 'list']) b.toggle('tiles-' + v, st.tileStyle === v);
+    for (const v of ['s', 'l']) b.toggle('tiles-size-' + v, st.tileSize === v);
+    start.style.setProperty('--g-size', (st.greetingSize || 0) + 'px');
+    start.style.setProperty('--start-w', (st.width || 0) + 'px');
+    start.style.setProperty('--search-h', (st.searchHeight || 0) + 'px');
+    const head = $('.dial-head span');
+    if (head) head.textContent = st.title || START_TEXT.title;
+  }
+
+  let editorOpen = false;
+  function renderStartEditor() {
+    let ed = $('#start-editor');
+    if (!editorOpen) { if (ed) ed.remove(); return; }
+    if (!ed) {
+      ed = document.createElement('aside');
+      ed.id = 'start-editor';
+      $('#start').append(ed);
+    }
+    const scroll = ed.scrollTop;
+    ed.innerHTML = `<div class="se-head"><b>Стартовая страница</b><button class="icon sm" id="se-close" title="Готово">${icon('x')}</button></div>
+      <div class="se-body">
+        <h4>Тексты</h4>
+        <label class="field"><span class="label">Приветствие</span><input class="text-input" data-key="greeting" value="${esc(S.greeting)}" placeholder="Пусто — скрыть"></label>
+        <label class="field"><span class="label">Заголовок над плитками</span><input class="text-input" data-key="start.title" value="${esc(S.start.title)}"></label>
+        <h4>Что показывать</h4>
+        <div class="chips">${chip('start.logo', 'Логотип')}${chip('clock', 'Часы')}<button class="chip ${startShows('squiggle') ? 'on' : ''}" data-start-show="squiggle">Волна</button>${chip('start.search', 'Поиск')}<button class="chip ${startShows('head') ? 'on' : ''}" data-start-show="head">Заголовок</button>${chip('start.hint', 'Подсказка')}${chip('start.dial', 'Плитки')}${chip('start.customize', 'Кнопка «Настроить»')}</div>
+        <h4>Размеры</h4>
+        ${row('Приветствие', S.start.greetingSize ? '' : 'как в теме', range('start.greetingSize', 0, 80, ' px', 2))}
+        ${row('Ширина', S.start.width ? '' : 'как в теме', range('start.width', 0, 1100, ' px', 20))}
+        ${row('Высота поиска', S.start.searchHeight ? '' : 'как в теме', range('start.searchHeight', 0, 80, ' px', 2))}
+        <h4>Вид</h4>
+        <div class="field"><span class="label">Плитки</span>${seg('start.tileStyle', [['auto', 'Тема'], ['cards', 'Карточки'], ['pills', 'Таблетки'], ['icons', 'Значки'], ['list', 'Список']])}</div>
+        <div class="field"><span class="label">Размер плиток</span>${seg('start.tileSize', [['s', 'Мелкие'], ['m', 'Обычные'], ['l', 'Крупные']])}</div>
+        <div class="field"><span class="label">Поле поиска</span>${seg('start.searchShape', [['auto', 'Тема'], ['round', 'Круглое'], ['square', 'Прямое']])}</div>
+        <div class="field"><span class="label">Выравнивание</span>${seg('start.align', [['center', 'По центру'], ['left', 'Слева']])}</div>
+        <div class="field"><span class="label">Положение</span>${seg('start.valign', [['center', 'Посередине'], ['top', 'Сверху']])}</div>
+        <div class="se-actions">
+          <button class="btn small" id="se-colors">${icon('palette')}Цвета элементов</button>
+          <button class="btn small" id="se-look">${icon('image')}Фон и тема</button>
+          <button class="btn small ghost" id="se-reset">Как было</button>
+        </div>
+      </div>`;
+    bindSettings(ed);
+    for (const c of $$('[data-start-show]', ed)) c.onclick = () => { const k = c.dataset.startShow; S.start[k] = !startShows(k); onSettingChanged('start.' + k); };
+    ed.scrollTop = scroll;
+    $('#se-close', ed).onclick = () => toggleStartEditor(false);
+    $('#se-colors', ed).onclick = () => openSettings('tune');
+    $('#se-look', ed).onclick = () => openSettings('look');
+    $('#se-reset', ed).onclick = () => { S.start = structuredClone(DEFAULTS.start); S.greeting = DEFAULTS.greeting; S.clock = true; for (const k of Object.keys(S.tune)) if (['greeting', 'squiggle', 'clock', 'clockBg', 'search', 'searchText', 'searchBorder', 'findBtn', 'findBtnText', 'tiles', 'tilesText', 'tilesBorder', 'head'].includes(k)) delete S.tune[k]; onSettingChanged('start'); renderDial(); renderStartEditor(); };
+  }
+  window.toggleStartEditor = function toggleStartEditor(on) {
+    editorOpen = on == null ? !editorOpen : !!on;
+    document.body.classList.toggle('start-editing', editorOpen);
+    renderStartEditor();
+  };
+  const toggleStartEditor = window.toggleStartEditor;
+
+  // ===================================================================== memory modes
+
+  const MEM_MODES = {
+    normal: { suspendAfter: 30, perfMode: false, suspendOnMinimize: false, tabPreview: true, hwAccel: true },
+    saver: { suspendAfter: 5, perfMode: true, suspendOnMinimize: true, tabPreview: true, hwAccel: true },
+    max: { suspendAfter: -1, perfMode: true, suspendOnMinimize: true, tabPreview: false, hwAccel: false, bgAnim: false, lazyRestore: true },
+  };
+  async function setMemMode(mode) {
+    const needsRestart = (mode === 'max') !== (S.memMode === 'max') || MEM_MODES[mode].hwAccel !== S.hwAccel;
+    S.memMode = mode;
+    Object.assign(S, MEM_MODES[mode]);
+    if (mode !== 'normal' && curBg() === 'video') setBg(isLight() ? 'morning' : 'tako');
+    onSettingChanged('perfMode');
+    await T.store.set('settings', S);
+    renderSettings();
+    if (needsRestart) toast('Режим памяти включится полностью после перезапуска', { action: { label: 'Перезапустить', fn: () => T.relaunch() }, ms: 12000 });
+  }
+
+  // a tab that was just left is unloaded right away ("Сразу") — after a short pause, so quick switching back costs nothing
+  let lastShown = null;
+  HOOKS.shown.push((tab) => {
+    if (lastShown && lastShown !== tab.id && S.suspendAfter === -1) {
+      const prev = lastShown;
+      setTimeout(() => { const t = byId(prev); if (t && t.id !== activeId) window.suspendTab(t); }, 3000);
+    }
+    lastShown = tab.id;
+  });
 
   SETTINGS_PANELS.extensions = () => `<h3>Расширения</h3>
       ${row('Магазин расширений Chrome', 'Откройте страницу расширения и нажмите «Установить» — браузер спросит подтверждение', `<button class="btn small accent" id="ext-store">${icon('external')}Открыть Chrome Web Store</button>`, 'col')}
@@ -946,6 +1121,7 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
       ${row('Загрузить распакованное', 'Своё или скачанное вручную расширение — папка с manifest.json', '<button class="btn small" id="ext-unpacked">Выбрать папку…</button>')}
       ${row('Обновить расширения', 'Расширения из магазина обновляются сами — при запуске и каждые 5 часов', '<button class="btn small" id="ext-update">Обновить сейчас</button>')}
       ${row('Кнопки расширений на панели', 'Значки справа от адресной строки', sw('extButtons'))}
+      ${row('Расширения в приватных вкладках', 'Включите, если пользуетесь блокировщиком-расширением (uBlock и т. п.). Встроенная защита от рекламы работает в приватных вкладках всегда', sw('extPrivate'))}
       <h4>Установленные</h4>
       <div class="set-row col"><div class="ext-list" id="ext-list"><div class="vpn-empty">Загружаю…</div></div></div>
       <div class="set-row col"><div class="note-box">Работает большинство расширений: блокировщики рекламы, Dark Reader, переводчики, менеджеры паролей. Часть возможностей Chrome (вход в аккаунт Google, синхронизация, некоторые новые API) в Electron нет — такие расширения могут работать не полностью. В приватных вкладках расширения выключены, как и в Chrome.</div></div>`;
@@ -998,12 +1174,22 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
       <h4>Ядро Xray</h4>`;
     return origVpn().replace('<h4>Ядро Xray</h4>', extra);
   };
+  const origPerf = SETTINGS_PANELS.perf;
+  SETTINGS_PANELS.perf = () => origPerf().replace('<div class="set-row col"><div class="stats" id="perf-stats">', `<div class="set-row col"><div class="txt"><div>Режим памяти</div><small>${{
+    normal: 'Обычный: вкладки выгружаются через 30 минут, всё красиво.',
+    saver: 'Экономный: фоновые вкладки выгружаются через 5 минут и при сворачивании, без размытия и анимаций.',
+    max: 'Минимум памяти: вкладка выгружается сразу, как вы с неё ушли; Chromium работает в облегчённом режиме, вкладки делят процессы, без видеоускорения. Совсем без памяти браузер работать не может — сам Chromium с одной вкладкой занимает около 150–200 МБ, — но это самый лёгкий режим.',
+  }[S.memMode] || ''}</small></div>
+        <div class="seg" id="mem-mode">${[['normal', 'Обычный'], ['saver', 'Экономный'], ['max', 'Минимум памяти']].map(([k, n]) => `<button data-mem="${k}" class="${S.memMode === k ? 'on' : ''}">${n}</button>`).join('')}</div></div>
+      <div class="set-row col"><div class="stats" id="perf-stats">`);
+
   SETTINGS_PANELS.privacy = () => {
     const upd = adblockStatus.updatedAt ? new Date(adblockStatus.updatedAt).toLocaleDateString('ru-RU') : '';
     return `<h3>Приватность и реклама</h3>
       ${row('Блокировать рекламу и трекеры', adblockStatus.full ? `Списки EasyList, EasyPrivacy и русский AdGuard${upd ? ', обновлены ' + upd : ''}. За сеанс заблокировано: ${adblockStatus.total}` : 'Списки загружаются… пока работает встроенный короткий список', sw('adblock.enabled'))}
       ${row('Обновить списки фильтров', 'Обновляются сами раз в неделю', '<button class="btn small" id="ab-update">Обновить</button>')}
       <div class="set-row col"><div class="txt"><div>Не блокировать на сайтах</div><small>По одному в строке. Быстрее — щит в адресной строке</small></div><textarea class="text-input mono" id="ab-allow" rows="3" placeholder="example.com">${esc(S.adblock.allow.join('\n'))}</textarea></div>
+      <div class="set-row col"><div class="note-box ok">Защита от рекламы работает и в обычных, и в приватных вкладках.</div></div>
       <h4>Тёмный режим для сайтов</h4>
       ${row('Затемнять светлые сайты', 'Страницы, у которых нет своей тёмной темы, перекрашиваются. Для отдельного сайта — меню ⋯ или Alt+D', sw('siteDark'))}
       ${Object.keys(S.siteDarkSites).length ? row('Свои настройки для сайтов', Object.entries(S.siteDarkSites).map(([h, on]) => `${esc(h)} — ${on ? 'тёмный' : 'как есть'}`).join(', '), '<button class="btn small ghost" id="dark-reset">Сбросить</button>') : ''}
@@ -1024,6 +1210,41 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
   SETTINGS_PANELS.about = () => origAbout().replace('<table class="keys">', `<div class="about-update"><span id="about-version"></span><button class="btn small" id="upd-check">Проверить обновления</button><span id="upd-status"></span></div><table class="keys">`);
 
   HOOKS.settings.push((p) => {
+    // memory modes
+    for (const b of $$('[data-mem]', p)) b.onclick = () => setMemMode(b.dataset.mem);
+    // colour tuning
+    for (const inp of $$('[data-tune]', p)) {
+      inp.oninput = () => {
+        const k = inp.dataset.tune;
+        S.tune[k] = { c: inp.value, a: (S.tune[k] && S.tune[k].a) ?? 100 };
+        applyTune();
+        const dot = inp.parentElement;
+        dot.classList.add('on');
+        dot.style.setProperty('--c', tuneRgba(S.tune[k]));
+        const a = $(`[data-tune-a="${k}"]`, p);
+        const r = $(`[data-tune-reset="${k}"]`, p);
+        if (a) a.disabled = false;
+        if (r) r.disabled = false;
+        saveSettings();
+      };
+    }
+    for (const a of $$('[data-tune-a]', p)) {
+      a.style.setProperty('--fill', a.value + '%');
+      a.oninput = () => {
+        const k = a.dataset.tuneA;
+        if (!S.tune[k]) return;
+        S.tune[k].a = Number(a.value);
+        a.style.setProperty('--fill', a.value + '%');
+        applyTune();
+        const dot = $(`[data-tune="${k}"]`, p).parentElement;
+        dot.style.setProperty('--c', tuneRgba(S.tune[k]));
+        saveSettings();
+      };
+    }
+    for (const r of $$('[data-tune-reset]', p)) r.onclick = () => { delete S.tune[r.dataset.tuneReset]; applyTune(); saveSettings(); renderSettings(); };
+    const tra = $('#tune-reset-all', p);
+    if (tra) tra.onclick = () => { S.tune = {}; applyTune(); saveSettings(); renderSettings(); };
+
     // extensions
     if ($('#ext-list', p)) {
       renderExtList(p);
@@ -1171,6 +1392,13 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
     if (key === 'siteDark') for (const t of tabs) applySiteDark(t);
     if (key === 'bmBar' || key === 'showWs') { renderBmBar(); renderWs(); }
     if (key === 'extButtons') $('#ext-actions').hidden = !S.extButtons;
+    if (key === 'extPrivate') T.extPrivate(S.extPrivate).then(() => toast(S.extPrivate ? 'Расширения включены в приватных вкладках (для уже открытых — после перезагрузки страницы)' : 'Расширения в приватных вкладках выключены'));
+    if (key === 'greeting' || key === 'clock' || key.startsWith('start')) {
+      applyStart();
+      // sliders and text fields keep working under the cursor; chips and switches redraw the editor
+      const live = ['greeting', 'start.title', 'start.greetingSize', 'start.width', 'start.searchHeight'];
+      if (editorOpen && !live.includes(key)) renderStartEditor();
+    }
     if (key === 'mode') { lastLight = null; }
     if (key === 'readerTheme' || key === 'readerSize') { const t = active(); if (t && t.reader && !$('#reader').hidden) showReader(t); }
   });
@@ -1402,10 +1630,15 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
       if (t.wcId) T.ext.tabCreated(reqId, t.wcId);
     });
     T.ext.onSelectTab((wcId) => { const t = tabs.find((x) => x.wcId === wcId); if (t) activate(t.id); });
-    T.ext.onRemoveTab((wcId) => { const t = tabs.find((x) => x.wcId === wcId); if (t) closeTab(t.id); });
+    T.ext.onRemoveTab((wcId) => { const t = tabs.find((x) => x.wcId === wcId && x.wv); if (t) closeTab(t.id); });
     T.ext.onChanged(() => {
       toast('Расширение установлено — его кнопка появится справа от адресной строки');
       if ($('#settings-dlg').open && setSection === 'extensions') renderSettings();
+    });
+    T.onWinState((state) => {
+      if (state !== 'minimized') return;
+      if (S.suspendOnMinimize || S.memMode === 'max') suspendIdleTabs(true);
+      if (S.memMode === 'max') { T.win.clearCache(); for (const t of tabs) t.thumb = null; }
     });
     T.onSystemTheme((dark) => { systemDark = dark; if (S.mode === 'system') applyAppearance(); });
     T.onCtx((c) => {
