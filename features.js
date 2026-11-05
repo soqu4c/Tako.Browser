@@ -15,7 +15,7 @@
     siteDark: false, siteDarkSites: {},
     translateTo: 'ru', translator: 'google',
     readerSize: 19, readerTheme: 'app',
-    keys: {}, presets: [], splitRatio: 0.5,
+    keys: {}, presets: [], splitRatio: 0.5, extButtons: true,
   });
   Object.assign(DEFAULTS.vpn, { autoFastest: false, subEvery: 24, subsAt: 0 });
   for (const k of ['mode', 'bmBar', 'translator', 'dns']) RERENDER.add(k);
@@ -376,6 +376,50 @@
     $('#ab-settings').onclick = () => openSettings('privacy');
   }
 
+  // The shield in the toolbar covers both: VPN on top, ads and trackers below
+  const origVpnPopover = window.renderVpnPopover;
+  window.renderVpnPopover = function shieldPopover() {
+    origVpnPopover();
+    const pop = $('#popover');
+    pop.dataset.kind = 'shield';
+    const t = active();
+    const host = t && t.url && /^https?:/.test(t.url) ? hostOf(t.url) : '';
+    const allowed = host && siteAllowed(host);
+    pop.insertAdjacentHTML('beforeend', `<div class="pop-sep"></div>
+      <div class="pop-head"><b>Реклама и трекеры</b><label class="switch"><input type="checkbox" id="pa-on" ${S.adblock.enabled ? 'checked' : ''}><span></span></label></div>
+      <div class="stats"><div class="stat"><b>${S.adblock.enabled && !allowed && t ? t.blocked : 0}</b><small>на этой странице</small></div><div class="stat"><b>${adblockStatus.total}</b><small>за сеанс</small></div></div>
+      ${host && S.adblock.enabled ? `<div class="pop-row"><span>${esc(host)}</span><button class="btn small" id="pa-site">${allowed ? 'Блокировать здесь' : 'Не блокировать здесь'}</button></div>` : ''}
+      <div class="pop-actions"><button class="btn small ghost" id="pa-settings">${icon('gear')}Настройки защиты</button></div>`);
+    $('#pa-on').onchange = (e) => {
+      S.adblock.enabled = e.target.checked;
+      saveSettings();
+      pushAdblock().then(() => { if (t && t.wv) t.wv.reload(); });
+      updateVpnButton();
+      renderVpnPopover();
+    };
+    const site = $('#pa-site');
+    if (site) site.onclick = () => {
+      S.adblock.allow = allowed ? S.adblock.allow.filter((d) => !(host === d || host.endsWith('.' + d))) : [...S.adblock.allow, host];
+      saveSettings();
+      pushAdblock().then(() => { if (t.wv) t.wv.reload(); });
+      toast(allowed ? `Реклама на ${host} снова блокируется` : `На ${host} реклама больше не блокируется`);
+      renderVpnPopover();
+    };
+    $('#pa-settings').onclick = () => { closeFloating(); openSettings('privacy'); };
+  };
+
+  // the shield button shows how much was blocked on the open page
+  const origVpnButton = window.updateVpnButton;
+  window.updateVpnButton = function shieldButton() {
+    origVpnButton();
+    const b = $('#btn-vpn');
+    const t = active();
+    const host = t && t.url ? hostOf(t.url) : '';
+    const n = S.adblock && S.adblock.enabled && t && !(host && siteAllowed(host)) ? t.blocked || 0 : 0;
+    if (n) b.insertAdjacentHTML('beforeend', `<b class="badge shield-badge">${n > 99 ? '99+' : n}</b>`);
+    b.title = `${b.title} · реклама: ${S.adblock && S.adblock.enabled ? (n ? `заблокировано ${n}` : 'блокируется') : 'не блокируется'}`;
+  };
+
   // ===================================================================== dark mode for sites
 
   const DARK_CSS = `html { filter: invert(1) hue-rotate(180deg) !important; background: #fff !important; }
@@ -715,7 +759,7 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
 
   // ===================================================================== light mode, saved looks, video background
 
-  const LOOK_KEYS = ['theme', 'mode', 'lightFrom', 'lightTo', 'accent', 'accentCustom', 'accent2Custom', 'panel', 'panelCustom', 'panelL', 'panelCustomL', 'panelAlpha', 'textColor',
+  const LOOK_KEYS = ['theme', 'mode', 'lightFrom', 'lightTo', 'accent', 'accentCustom', 'accent2Custom', 'panel', 'panelCustom', 'panelL', 'panelCustomL', 'panelAlpha', 'textColor', 'textColorL',
     'radius', 'motion', 'bg', 'bgL', 'bgImage', 'bgVideo', 'bgColor1', 'bgColor2', 'bgAngle', 'bgDim', 'bgBlur', 'bgAnim', 'bgGrain', 'font', 'fontCustom',
     'uiScale', 'density', 'gap', 'tabsPos', 'tabsCompact', 'tabsWidth', 'tabMax', 'tabClose', 'tabColorMode', 'customCss'];
   const lookNow = () => Object.fromEntries(LOOK_KEYS.map((k) => [k, structuredClone(S[k])]));
@@ -827,28 +871,28 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
     const t = active();
     const page = !!(t && t.wv && /^https?:/.test(t.url || ''));
     const host = t && t.url ? hostOf(t.url) : '';
-    const k = (id) => { const ks = keysOf(id); return ks.length ? '   ' + ks[0] : ''; };
+    const k = (id) => (keysOf(id)[0] || '');
     anchorMenu($('#btn-menu'), [
-      { label: 'Новая вкладка' + k('newTab'), icon: 'plus', fn: () => createTab() },
-      { label: 'Новая приватная вкладка' + k('newPrivate'), icon: 'mask', fn: () => createTab('', { private: true }) },
+      { label: 'Новая вкладка', hint: k('newTab'), icon: 'plus', fn: () => createTab() },
+      { label: 'Новая приватная вкладка', hint: k('newPrivate'), icon: 'mask', fn: () => createTab('', { private: true }) },
       { label: 'Новое пространство…', icon: 'layers', fn: newWorkspace },
       '-',
-      { label: 'История' + k('history'), icon: 'history', fn: openHistory },
-      { label: 'Закладки' + k('bookmarks'), icon: 'bookmark', fn: () => openBookmarks() },
-      { label: 'Загрузки' + k('downloads'), icon: 'download', fn: openDownloads },
+      { label: 'История', hint: k('history'), icon: 'history', fn: openHistory },
+      { label: 'Закладки', hint: k('bookmarks'), icon: 'bookmark', fn: () => openBookmarks() },
+      { label: 'Загрузки', hint: k('downloads'), icon: 'download', fn: openDownloads },
       '-',
-      { label: split ? 'Закрыть разделение' : 'Разделить экран' + k('split'), icon: 'split', fn: () => (split ? closeSplit() : splitWithNext()) },
-      { label: 'Режим чтения' + k('reader'), icon: 'book', fn: openReader, disabled: !page },
-      { label: 'Перевести страницу' + k('translate'), icon: 'translate', fn: translatePage, disabled: !page },
-      { label: 'Картинка в картинке' + k('pip'), icon: 'pip', fn: pip, disabled: !page },
+      { label: split ? 'Закрыть разделение' : 'Разделить экран', hint: k('split'), icon: 'split', fn: () => (split ? closeSplit() : splitWithNext()) },
+      { label: 'Режим чтения', hint: k('reader'), icon: 'book', fn: openReader, disabled: !page },
+      { label: 'Перевести страницу', hint: k('translate'), icon: 'translate', fn: translatePage, disabled: !page },
+      { label: 'Картинка в картинке', hint: k('pip'), icon: 'pip', fn: pip, disabled: !page },
       { label: 'Скриншот видимой части', icon: 'camera', fn: () => screenshot(false), disabled: !page },
-      { label: 'Скриншот всей страницы' + k('screenshot'), icon: 'camera', fn: () => screenshot(true), disabled: !page },
+      { label: 'Скриншот всей страницы', hint: k('screenshot'), icon: 'camera', fn: () => screenshot(true), disabled: !page },
       { label: 'Скопировать скриншот', icon: 'camera', fn: () => screenshot(false, true), disabled: !page },
-      { label: (t && t.darkKey ? 'Выключить' : 'Включить') + ' тёмный режим сайта' + k('siteDark'), icon: 'moon', fn: toggleSiteDark, disabled: !page },
+      { label: (t && t.darkKey ? 'Выключить' : 'Включить') + ' тёмный режим сайта', hint: k('siteDark'), icon: 'moon', fn: toggleSiteDark, disabled: !page },
       { label: host && siteAllowed(host) ? 'Блокировать рекламу здесь' : 'Не блокировать рекламу здесь', icon: 'block', disabled: !page || !S.adblock.enabled, fn: () => { S.adblock.allow = siteAllowed(host) ? S.adblock.allow.filter((d) => d !== host) : [...S.adblock.allow, host]; saveSettings(); pushAdblock().then(() => t.wv.reload()); } },
       '-',
       { label: isLight() ? 'Тёмная тема' : 'Светлая тема', icon: isLight() ? 'moon' : 'sun', fn: () => { S.mode = isLight() ? 'dark' : 'light'; onSettingChanged('mode'); } },
-      { label: 'Настройки' + k('settings'), icon: 'gear', fn: () => openSettings() },
+      { label: 'Настройки', hint: k('settings'), icon: 'gear', fn: () => openSettings() },
     ]);
   }
 
@@ -893,6 +937,30 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
 
   SECTIONS.splice(SECTIONS.findIndex((x) => x[0] === 'vpn') + 1, 0, ['privacy', 'lockkey', 'Приватность и реклама']);
   SECTIONS.splice(SECTIONS.findIndex((x) => x[0] === 'about'), 0, ['keys', 'keyboard', 'Горячие клавиши']);
+  SECTIONS.splice(SECTIONS.findIndex((x) => x[0] === 'privacy') + 1, 0, ['extensions', 'puzzle', 'Расширения']);
+
+  SETTINGS_PANELS.extensions = () => `<h3>Расширения</h3>
+      ${row('Магазин расширений Chrome', 'Откройте страницу расширения и нажмите «Установить» — браузер спросит подтверждение', `<button class="btn small accent" id="ext-store">${icon('external')}Открыть Chrome Web Store</button>`, 'col')}
+      <div class="set-row col"><div class="txt"><div>Установить по ссылке</div><small>Вставьте ссылку на расширение из Chrome Web Store или его ID</small></div>
+        <form class="inline-form" id="ext-install-form"><input class="text-input mono" id="ext-install" placeholder="https://chromewebstore.google.com/detail/…"><button class="btn" id="ext-install-btn">Установить</button></form></div>
+      ${row('Загрузить распакованное', 'Своё или скачанное вручную расширение — папка с manifest.json', '<button class="btn small" id="ext-unpacked">Выбрать папку…</button>')}
+      ${row('Обновить расширения', 'Расширения из магазина обновляются сами — при запуске и каждые 5 часов', '<button class="btn small" id="ext-update">Обновить сейчас</button>')}
+      ${row('Кнопки расширений на панели', 'Значки справа от адресной строки', sw('extButtons'))}
+      <h4>Установленные</h4>
+      <div class="set-row col"><div class="ext-list" id="ext-list"><div class="vpn-empty">Загружаю…</div></div></div>
+      <div class="set-row col"><div class="note-box">Работает большинство расширений: блокировщики рекламы, Dark Reader, переводчики, менеджеры паролей. Часть возможностей Chrome (вход в аккаунт Google, синхронизация, некоторые новые API) в Electron нет — такие расширения могут работать не полностью. В приватных вкладках расширения выключены, как и в Chrome.</div></div>`;
+
+  async function renderExtList(p) {
+    const box = $('#ext-list', p);
+    if (!box) return;
+    const list = await T.ext.list();
+    box.innerHTML = list.length ? list.map((e) => `<div class="ext-item" data-ext="${esc(e.id)}">
+        ${e.icon ? `<img src="${e.icon}" alt="">` : `<span class="ext-noicon">${icon('puzzle')}</span>`}
+        <div class="name"><div>${esc(e.name)} <small class="ext-ver">${esc(e.version)}${e.unpacked ? ' · распакованное' : ''}${e.mv === 2 ? ' · MV2' : ''}</small></div><small>${esc(e.description).slice(0, 140)}</small></div>
+        ${e.options ? `<button class="btn small ghost" data-ext-options="${esc(e.options)}">Настройки</button>` : ''}
+        <button class="icon sm danger" data-ext-remove="${esc(e.id)}" title="Удалить">${icon('trash')}</button></div>`).join('')
+      : '<div class="vpn-empty">Расширений пока нет — загляните в Chrome Web Store</div>';
+  }
 
   const origLook = SETTINGS_PANELS.look;
   SETTINGS_PANELS.look = () => {
@@ -956,6 +1024,34 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
   SETTINGS_PANELS.about = () => origAbout().replace('<table class="keys">', `<div class="about-update"><span id="about-version"></span><button class="btn small" id="upd-check">Проверить обновления</button><span id="upd-status"></span></div><table class="keys">`);
 
   HOOKS.settings.push((p) => {
+    // extensions
+    if ($('#ext-list', p)) {
+      renderExtList(p);
+      $('#ext-store', p).onclick = () => { $('#settings-dlg').close(); createTab('https://chromewebstore.google.com/category/extensions'); };
+      $('#ext-install-form', p).onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = $('#ext-install-btn', p);
+        btn.disabled = true;
+        btn.textContent = 'Устанавливаю…';
+        const r = await T.ext.install($('#ext-install', p).value);
+        btn.disabled = false;
+        btn.textContent = 'Установить';
+        if (r.ok) { toast('Расширение установлено'); $('#ext-install', p).value = ''; renderExtList(p); } else toast(r.error, { err: true });
+      };
+      $('#ext-unpacked', p).onclick = async () => { const r = await T.ext.loadUnpacked(); if (r.ok) { toast('Расширение загружено'); renderExtList(p); } else if (!r.canceled) toast(r.error, { err: true }); };
+      $('#ext-update', p).onclick = async () => { const r = await T.ext.update(); toast(r.ok ? 'Расширения проверены и обновлены' : 'Не удалось обновить' + (r.error ? ': ' + r.error : ''), { err: !r.ok }); renderExtList(p); };
+      $('#ext-list', p).onclick = async (e) => {
+        const opt = e.target.closest('[data-ext-options]');
+        if (opt) { $('#settings-dlg').close(); createTab(opt.dataset.extOptions); return; }
+        const rm = e.target.closest('[data-ext-remove]');
+        if (!rm) return;
+        const name = rm.closest('.ext-item').querySelector('.name div').childNodes[0].textContent.trim();
+        if (!confirm(`Удалить расширение «${name}»?`)) return;
+        const r = await T.ext.remove(rm.dataset.extRemove);
+        if (r.ok) { toast('Расширение удалено'); renderExtList(p); } else toast(r.error, { err: true });
+      };
+    }
+
     // saved looks
     const ps = $('#preset-save', p);
     if (ps) ps.onclick = async () => {
@@ -1074,6 +1170,7 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
     }
     if (key === 'siteDark') for (const t of tabs) applySiteDark(t);
     if (key === 'bmBar' || key === 'showWs') { renderBmBar(); renderWs(); }
+    if (key === 'extButtons') $('#ext-actions').hidden = !S.extButtons;
     if (key === 'mode') { lastLight = null; }
     if (key === 'readerTheme' || key === 'readerSize') { const t = active(); if (t && t.reader && !$('#reader').hidden) showReader(t); }
   });
@@ -1103,8 +1200,9 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
     tab.readable = false;
     if (tab.id === activeId) { closeReader(); $('#omni-reader').hidden = true; }
   });
-  HOOKS.ready.push((tab) => { applySiteDark(tab); checkReadable(tab); });
+  HOOKS.ready.push((tab) => { applySiteDark(tab); checkReadable(tab); if (tab.id === activeId && tab.wcId) T.ext.select(tab.wcId); });
   HOOKS.shown.push((tab) => {
+    if (tab.wcId) T.ext.select(tab.wcId); // extensions know which tab is in front
     layoutSplit();
     syncBgVideo();
     renderBmBar();
@@ -1129,11 +1227,8 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
     const marked = !!(url && bmFor(url));
     star.classList.toggle('on', marked);
     star.innerHTML = icon(marked ? 'star-on' : 'star');
-    const blk = $('#omni-block');
-    const host = url ? hostOf(url) : '';
-    blk.hidden = !page || !S.adblock.enabled;
-    blk.classList.toggle('off', !!host && siteAllowed(host));
-    $('#omni-block-n').textContent = t && t.blocked ? (t.blocked > 99 ? '99+' : t.blocked) : '';
+    $('#omni-block').hidden = true;
+    updateVpnButton();
   });
 
   HOOKS.init.push(async () => {
@@ -1292,9 +1387,26 @@ img, video, picture, canvas, iframe, embed, object, svg image, [style*="backgrou
       const t = tabs.find((x) => x.wcId === wcId);
       if (!t) return;
       t.blocked = n;
-      if (t.id === activeId) $('#omni-block-n').textContent = n ? (n > 99 ? '99+' : n) : '';
+      if (t.id === activeId) {
+        updateVpnButton();
+        if (!$('#popover').hidden && $('#popover').dataset.kind === 'shield') renderVpnPopover();
+      }
     });
     T.onAdblockReady((st) => Object.assign(adblockStatus, st));
+
+    // extensions ask for tabs to be opened, switched to or closed
+    $('#ext-actions').hidden = !S.extButtons;
+    T.ext.onCreateTab(async ({ reqId, url, active: front }) => {
+      const t = createTab(url || 'about:blank', { background: !front });
+      for (let i = 0; i < 80 && !t.wcId; i++) await later(100);
+      if (t.wcId) T.ext.tabCreated(reqId, t.wcId);
+    });
+    T.ext.onSelectTab((wcId) => { const t = tabs.find((x) => x.wcId === wcId); if (t) activate(t.id); });
+    T.ext.onRemoveTab((wcId) => { const t = tabs.find((x) => x.wcId === wcId); if (t) closeTab(t.id); });
+    T.ext.onChanged(() => {
+      toast('Расширение установлено — его кнопка появится справа от адресной строки');
+      if ($('#settings-dlg').open && setSection === 'extensions') renderSettings();
+    });
     T.onSystemTheme((dark) => { systemDark = dark; if (S.mode === 'system') applyAppearance(); });
     T.onCtx((c) => {
       if (c.type === 'pip') pip();

@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src * data: blob: file:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'none'; media-src 'self' file: blob: data:">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src * data: blob: file: crx:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'none'; media-src 'self' file: blob: data:">
 <title>Tako.Browser</title>
 <link rel="stylesheet" id="theme-css" href="styles.css">
 <link rel="stylesheet" href="common.css">
@@ -60,6 +60,7 @@
     <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z" fill="currentColor"/></symbol>
     <symbol id="i-keyboard" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></g></symbol>
     <symbol id="i-lockkey" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z"/><circle cx="12" cy="11" r="2"/><path d="M12 13v3"/></g></symbol>
+    <symbol id="i-puzzle" viewBox="0 0 24 24"><path d="M9 4.5a2 2 0 1 1 4 0V6h4a1 1 0 0 1 1 1v4h-1.5a2 2 0 1 0 0 4H18v4a1 1 0 0 1-1 1h-4v-1.5a2 2 0 1 0-4 0V20H5a1 1 0 0 1-1-1v-4h1.5a2 2 0 1 0 0-4H4V7a1 1 0 0 1 1-1h4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
   </defs>
 </svg>
 
@@ -128,6 +129,7 @@
           <button type="button" class="omni-btn" id="omni-star" title="В закладки (Ctrl+D)"><svg class="i"><use href="#i-star"/></svg></button>
           <div id="suggest" hidden></div>
         </form>
+        <browser-action-list id="ext-actions" partition="persist:tako" alignment="bottom left"></browser-action-list>
         <button class="icon sm" id="btn-vpn" title="VPN"><svg class="i"><use href="#i-shield"/></svg></button>
         <button class="icon sm" id="btn-notes" title="Заметки (Ctrl+N)"><svg class="i"><use href="#i-note"/></svg><b class="badge" id="notes-badge" hidden></b></button>
         <button class="icon sm" id="btn-downloads" title="Загрузки (Ctrl+J)" hidden><svg class="i"><use href="#i-download"/></svg><i class="dl-ring" id="dl-ring"></i></button>

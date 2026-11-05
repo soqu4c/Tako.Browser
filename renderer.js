@@ -92,7 +92,7 @@ const DEFAULT_DIAL = [
 const DEFAULTS = {
   theme: 'tako',
   accent: 'salsa', accentCustom: '#ff5a47', accent2Custom: '',
-  panel: 'graphite', panelCustom: '#15171f', panelAlpha: 78, textColor: '',
+  panel: 'graphite', panelCustom: '#15171f', panelAlpha: 78, textColor: '', textColorL: '',
   mode: 'dark', lightFrom: '07:00', lightTo: '20:00', panelL: 'paper', panelCustomL: '#f6f4ef', bgL: 'morning', bgVideo: '',
   radius: 14, motion: true,
   bg: 'tako', bgImage: '', bgColor1: '#1d1f4a', bgColor2: '#5a1f3a', bgAngle: 150, bgDim: 15, bgBlur: 0, bgAnim: true, bgGrain: false,
@@ -269,6 +269,17 @@ function applyTheme(key, withColours) {
   if (withColours) Object.assign(S, THEMES[S.theme].defaults);
 }
 
+/** WCAG contrast of two hex colours is at least 3:1 */
+function readable(fg, bg) {
+  if (!fg || !/^#[0-9a-f]{6}$/i.test(fg) || !/^#[0-9a-f]{6}$/i.test(bg)) return !!fg;
+  const lum = (hex) => {
+    const [r, g, b] = rgbArr(hex).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const [a, b] = [lum(fg), lum(bg)].sort((x, y) => y - x);
+  return (a + 0.05) / (b + 0.05) >= 3;
+}
+
 function applyAppearance() {
   const root = document.documentElement.style;
   const body = document.body.classList;
@@ -311,10 +322,12 @@ function applyAppearance() {
   }
   if (hand) root.removeProperty('--glass');
   else root.setProperty('--glass', `rgba(${hexRgb(shade(panel, -2))}, ${S.perfMode ? 1 : 0.86})`);
-  if (S.textColor) {
-    root.setProperty('--text', S.textColor);
-    root.setProperty('--soft', `color-mix(in srgb, ${S.textColor} 78%, ${panel})`);
-    root.setProperty('--muted', `color-mix(in srgb, ${S.textColor} 52%, ${panel})`);
+  // light and dark modes keep their own text colour; one that would be unreadable on the panels is ignored
+  const tc = readable(S[mk('textColor')], panel) ? S[mk('textColor')] : '';
+  if (tc) {
+    root.setProperty('--text', tc);
+    root.setProperty('--soft', `color-mix(in srgb, ${tc} 78%, ${panel})`);
+    root.setProperty('--muted', `color-mix(in srgb, ${tc} 52%, ${panel})`);
   } else if (light) {
     root.setProperty('--text', '#1c1f27');
     root.setProperty('--soft', '#454a57');
@@ -482,6 +495,10 @@ function makeWebview(tab) {
     closeFloating();
     // in split view a click into the other half makes it the current tab
     if (split && tab.id !== activeId && (tab.id === split.a || tab.id === split.b)) activate(tab.id);
+  });
+  wv.addEventListener('did-attach', () => {
+    try { tab.wcId = wv.getWebContentsId(); } catch { /* detached */ }
+    if (tab.id === activeId) runHooks('shown', tab);
   });
   wv.addEventListener('dom-ready', () => {
     try { tab.wcId = wv.getWebContentsId(); } catch { /* detached */ }
@@ -991,7 +1008,7 @@ function showMenu(x, y, items) {
       continue;
     }
     const b = document.createElement('button');
-    b.innerHTML = `${it.icon ? icon(it.icon) : '<span class="i"></span>'}<span>${esc(it.label)}</span>`;
+    b.innerHTML = `${it.icon ? icon(it.icon) : '<span class="i"></span>'}<span class="menu-text">${esc(it.label)}</span>${it.hint ? `<span class="menu-key">${esc(it.hint)}</span>` : ''}`;
     b.disabled = !!it.disabled;
     b.onclick = () => { closeFloating(); it.fn(); };
     m.append(b);
@@ -1381,7 +1398,7 @@ const SETTINGS_PANELS = {
       ${row('Цвет акцента', 'Кнопки, индикаторы, подсветка', `<div class="swatches">${accents}</div>`)}
       ${S.accent === 'custom' ? row('Второй цвет акцента', 'Для градиентов и мелких деталей. Пусто — подберётся сам', `<input type="color" class="plain" id="accent2-custom" value="${S.accent2Custom || accentPair()[1]}"><button class="btn small ghost" id="accent2-auto">Авто</button>`) : ''}
       ${row('Цвет панелей', 'Вкладки, адресная строка, заметки', `<div class="swatches">${panels}</div>`)}
-      ${row('Цвет текста', S.textColor ? 'Свой цвет' : 'Как в теме', `<input type="color" class="plain" id="text-color" value="${S.textColor || (S.theme === 'handmade' ? '#ece6d6' : '#eef0f6')}">${S.textColor ? '<button class="btn small ghost" id="text-reset">Сбросить</button>' : ''}`)}
+      ${row(isLight() ? 'Цвет текста в светлом режиме' : 'Цвет текста', S[mk('textColor')] ? (readable(S[mk('textColor')], curPanel() === 'custom' ? curPanelCustom() : ((isLight() ? LIGHT_PANELS : PANELS)[curPanel()] || ['#000000'])[0]) ? 'Свой цвет' : 'Этот цвет плохо читается на панелях — пока используется цвет темы') : 'Как в теме', `<input type="color" class="plain" id="text-color" value="${S[mk('textColor')] || (isLight() ? '#1c1f27' : S.theme === 'handmade' ? '#ece6d6' : '#eef0f6')}">${S[mk('textColor')] ? '<button class="btn small ghost" id="text-reset">Сбросить</button>' : ''}`)}
       ${row('Прозрачность панелей', S.perfMode ? 'В режиме экономии панели всегда непрозрачные' : 'Чем меньше — тем сильнее виден фон', range('panelAlpha', 20, 100, '%'))}
       ${row('Скругление углов', '0 — совсем острые', range('radius', 0, 26, ' px'))}
       <h4>Фон</h4>
@@ -1559,11 +1576,11 @@ function bindSettings(p) {
   if (a2a) a2a.onclick = () => { S.accent2Custom = ''; onSettingChanged('accent2Custom'); renderSettings(); };
   const tc = $('#text-color', p);
   if (tc) {
-    tc.oninput = () => { S.textColor = tc.value; onSettingChanged('textColor'); };
+    tc.oninput = () => { S[mk('textColor')] = tc.value; onSettingChanged('textColor'); };
     tc.onchange = () => renderSettings();
   }
   const tr = $('#text-reset', p);
-  if (tr) tr.onclick = () => { S.textColor = ''; onSettingChanged('textColor'); renderSettings(); };
+  if (tr) tr.onclick = () => { S[mk('textColor')] = ''; onSettingChanged('textColor'); renderSettings(); };
   const sn = $('#suspend-now', p);
   if (sn) sn.onclick = () => { toast(`Выгружено вкладок: ${suspendIdleTabs(true)}`); updateStats(); };
   const rl = $('#relaunch', p);

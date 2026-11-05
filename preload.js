@@ -1,6 +1,9 @@
 'use strict';
 const { contextBridge, ipcRenderer, webFrame } = require('electron');
 
+// <browser-action-list>: toolbar buttons of Chrome extensions
+try { require('electron-chrome-extensions/browser-action').injectBrowserAction(); } catch (e) { console.error('browser actions unavailable', e); }
+
 const on = (channel) => (cb) => {
   const fn = (_e, ...args) => cb(...args);
   ipcRenderer.on(channel, fn);
@@ -46,6 +49,19 @@ contextBridge.exposeInMainWorld('tako', {
   themeSource: (src) => ipcRenderer.invoke('theme:source', src),
   version: () => ipcRenderer.invoke('app:version'),
   ready: () => ipcRenderer.invoke('app:ready'),
+  ext: {
+    list: () => ipcRenderer.invoke('ext:list'),
+    install: (input) => ipcRenderer.invoke('ext:install', input),
+    loadUnpacked: () => ipcRenderer.invoke('ext:unpacked'),
+    remove: (id) => ipcRenderer.invoke('ext:remove', id),
+    update: () => ipcRenderer.invoke('ext:update'),
+    select: (wcId) => ipcRenderer.invoke('ext:select', wcId),
+    tabCreated: (reqId, wcId) => ipcRenderer.invoke('ext:tab-created', reqId, wcId),
+    onCreateTab: on('ext:create-tab'),
+    onSelectTab: on('ext:select-tab'),
+    onRemoveTab: on('ext:remove-tab'),
+    onChanged: on('ext:changed'),
+  },
   openLogs: () => ipcRenderer.invoke('app:logs'),
   searchTheme: (theme, region) => ipcRenderer.invoke('search:theme', theme, region),
   setKeys: (list) => ipcRenderer.invoke('keys:set', list),

@@ -343,3 +343,31 @@ body.light .bg-opt span { color: #fff; }
 #toolbar { z-index: 6; }
 #bmbar, #findbar { position: relative; z-index: 5; }
 #findbar { position: absolute; }
+
+/* menu: the shortcut sits in its own column on the right */
+#menu { max-width: 380px; }
+#menu button .menu-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+#menu button .menu-key { flex: none; padding-left: 22px; color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+#menu button:hover .menu-key { color: inherit; opacity: .75; }
+
+/* the shield: VPN and ad protection in one place */
+.pop-sep { height: 1px; background: var(--line-2); margin: 14px -14px 12px; }
+#popover .stats { grid-template-columns: repeat(2, 1fr); margin-bottom: 4px; }
+#btn-vpn .shield-badge { background: #2fa36b; box-shadow: none; }
+body.theme-handmade #btn-vpn .shield-badge { background: var(--ok); color: #12160c; }
+
+/* extensions */
+browser-action-list { display: flex; align-items: center; gap: 1px; }
+browser-action-list[hidden] { display: none; }
+browser-action-list::part(action) { width: 30px; height: 30px; border-radius: var(--radius); background-size: 18px 18px; background-color: transparent; border: none; }
+browser-action-list::part(action):hover { background-color: var(--surface-3); }
+browser-action-list::part(badge) { font-size: 9px; font-weight: 700; border-radius: 4px; padding: 0 3px; }
+.ext-list { display: flex; flex-direction: column; gap: 6px; }
+.ext-item { display: flex; align-items: center; gap: 12px; padding: 9px 10px 9px 12px; border-radius: 12px; background: rgba(255, 255, 255, .03); border: 1px solid var(--line); }
+body.theme-handmade .ext-item { border-radius: var(--radius); }
+body.light .ext-item { background: rgba(255, 255, 255, .6); }
+.ext-item img, .ext-noicon { width: 32px; height: 32px; flex: none; border-radius: 6px; display: grid; place-items: center; color: var(--muted); }
+.ext-item .name { flex: 1; min-width: 0; }
+.ext-item .name div { color: var(--text); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ext-item .name small { color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ext-item .ext-ver { display: inline; font-weight: 400; color: var(--dim); }

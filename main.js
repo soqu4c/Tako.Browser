@@ -6,6 +6,7 @@ const path = require('path');
 const { pathToFileURL } = require('url');
 const vpn = require('./vpn');
 const search = require('./search');
+const exts = require('./extensions');
 
 // tako://search — results page drawn in the browser's own style (see search.js)
 protocol.registerSchemesAsPrivileged([{ scheme: 'tako', privileges: { standard: true, secure: true, supportFetchAPI: true } }]);
@@ -188,6 +189,7 @@ function setupSession(partition) {
 
 app.on('web-contents-created', (_e, contents) => {
   if (contents.getType() !== 'webview') return;
+  exts.addTab(contents, win);
 
   contents.setWindowOpenHandler(({ url, disposition }) => {
     // Real pop-ups (sign-in windows and the like) need window.opener, so they stay windows
@@ -273,6 +275,8 @@ app.on('web-contents-created', (_e, contents) => {
         { type: 'separator' },
       );
     }
+    const extItems = exts.contextItems(contents, p);
+    if (extItems.length) items.push(...extItems, { type: 'separator' });
     items.push({ label: 'Исследовать элемент', click: () => contents.inspectElement(p.x, p.y) });
     Menu.buildFromTemplate(items).popup({ window: win });
   });
@@ -310,15 +314,38 @@ ipcMain.handle('theme:source', (_e, src) => {
 });
 nativeTheme.on('updated', () => send('theme:system', nativeTheme.shouldUseDarkColors));
 
-ipcMain.handle('app:metrics', () => {
+// The Task Manager's "Memory" column is the private working set: pages a process holds alone that
+// are in RAM right now. Electron only reports the working set (shared pages counted in every process)
+// and private bytes (also counts what is committed but paged out), so on Windows the number comes
+// from the same performance counter the Task Manager reads.
+let pwsCache = { at: 0, key: '', bytes: null };
+function privateWorkingSet(pids) {
+  const key = pids.join(',');
+  if (pwsCache.key === key && Date.now() - pwsCache.at < 4000) return Promise.resolve(pwsCache.bytes);
+  return new Promise((resolve) => {
+    const filter = pids.map((p) => `IDProcess=${Number(p)}`).join(' OR ');
+    const cmd = `(Get-CimInstance Win32_PerfFormattedData_PerfProc_Process -Filter '${filter}' | Measure-Object -Property WorkingSetPrivate -Sum).Sum`;
+    require('child_process').execFile('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', cmd], { windowsHide: true, timeout: 8000 }, (err, out) => {
+      const bytes = err ? null : Number(String(out).trim()) || null;
+      pwsCache = { at: Date.now(), key, bytes };
+      resolve(bytes);
+    });
+  });
+}
+
+ipcMain.handle('app:metrics', async () => {
   const list = app.getAppMetrics();
-  // Working set counts shared pages (Chromium's DLLs, GPU buffers) once per process, so summing it
-  // over ~10 processes adds the same memory up many times. Private memory is what each process
-  // really holds on its own — the Windows Task Manager shows the same thing. (privateBytes is Windows-only.)
+  const pids = list.map((m) => m.pid);
+  if (xray.proc && xray.proc.pid) pids.push(xray.proc.pid);
+  const cpu = list.reduce((sum, m) => sum + ((m.cpu && m.cpu.percentCPUUsage) || 0), 0);
+  if (process.platform === 'win32') {
+    const bytes = await privateWorkingSet(pids);
+    if (bytes) return { memMB: Math.round(bytes / 1048576), exact: true, processes: pids.length, cpu: Math.round(cpu) };
+  }
+  // elsewhere (or if the counter is unavailable): private bytes where known, else the working set
   const priv = list.every((m) => m.memory && m.memory.privateBytes != null);
   const kb = list.reduce((sum, m) => sum + ((m.memory && (priv ? m.memory.privateBytes : m.memory.workingSetSize)) || 0), 0);
-  const cpu = list.reduce((sum, m) => sum + ((m.cpu && m.cpu.percentCPUUsage) || 0), 0);
-  return { memMB: Math.round(kb / 1024), exact: priv, processes: list.length, cpu: Math.round(cpu) };
+  return { memMB: Math.round(kb / 1024), exact: false, processes: pids.length, cpu: Math.round(cpu) };
 });
 ipcMain.handle('search:theme', (_e, theme, region) => { searchTheme = theme || {}; if (region) searchRegion = region; });
 ipcMain.handle('app:ready', () => {
@@ -326,6 +353,13 @@ ipcMain.handle('app:ready', () => {
   try { fs.unlinkSync(startFlag); } catch { /* already gone */ }
   return { safeMode };
 });
+ipcMain.handle('ext:list', () => exts.list());
+ipcMain.handle('ext:install', (_e, input) => exts.install(input));
+ipcMain.handle('ext:unpacked', () => exts.loadUnpacked());
+ipcMain.handle('ext:remove', (_e, id) => exts.remove(id));
+ipcMain.handle('ext:update', () => exts.update());
+ipcMain.handle('ext:select', (_e, wcId) => exts.selectTab(wcId));
+ipcMain.handle('ext:tab-created', (_e, reqId, wcId) => exts.tabCreated(reqId, wcId));
 ipcMain.handle('app:logs', () => { fs.mkdirSync(logDir(), { recursive: true }); shell.openPath(logDir()); });
 ipcMain.handle('app:relaunch', () => { app.relaunch(); app.quit(); });
 ipcMain.handle('app:version', () => app.getVersion());
@@ -698,7 +732,7 @@ if (!app.requestSingleInstanceLock()) {
     if (url) send('tab:open', { url });
   });
 
-  app.whenReady().then(() => {
+  app.whenReady().then(async () => {
     nativeTheme.themeSource = boot.mode === 'light' ? 'light' : boot.mode === 'system' ? 'system' : 'dark';
     try {
       const { AdBlock } = require('./adblock');
@@ -715,6 +749,13 @@ if (!app.requestSingleInstanceLock()) {
     for (const step of [() => setupSession(PARTITION), () => setupSession(PRIVATE)]) {
       try { step(); } catch (e) { log('session setup failed:', e); }
     }
+    // extensions load before the first page, so their scripts are there from the start (at most 5 s)
+    try {
+      await Promise.race([
+        exts.setup({ session: session.fromPartition(PARTITION), log, send, getWin: () => win }),
+        new Promise((r) => setTimeout(r, 5000)),
+      ]);
+    } catch (e) { log('extensions setup failed:', e); }
     createWindow();
     log('window created');
     try { setupUpdates(); } catch (e) { log('updates failed:', e); }
