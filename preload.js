@@ -1,5 +1,5 @@
 'use strict';
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webFrame } = require('electron');
 
 const on = (channel) => (cb) => {
   const fn = (_e, ...args) => cb(...args);
@@ -14,7 +14,9 @@ contextBridge.exposeInMainWorld('tako', {
     set: (name, data) => ipcRenderer.invoke('store:set', name, data),
   },
   win: {
-    overlay: (color, symbolColor) => ipcRenderer.invoke('win:overlay', color, symbolColor),
+    overlay: (color, symbolColor, height) => ipcRenderer.invoke('win:overlay', color, symbolColor, height),
+    uiZoom: (f) => webFrame.setZoomFactor(f),
+    relaunch: () => ipcRenderer.invoke('app:relaunch'),
     fullscreen: (on) => ipcRenderer.invoke('win:fullscreen', on),
   },
   pickBackground: () => ipcRenderer.invoke('bg:pick'),
@@ -22,6 +24,9 @@ contextBridge.exposeInMainWorld('tako', {
   showItem: (p) => ipcRenderer.invoke('shell:show', p),
   openExternal: (url) => ipcRenderer.invoke('shell:external', url),
   clearData: (what) => ipcRenderer.invoke('data:clear', what),
+  metrics: () => ipcRenderer.invoke('app:metrics'),
+  saveJson: (name, data) => ipcRenderer.invoke('file:save-json', name, data),
+  openJson: () => ipcRenderer.invoke('file:open-json'),
   vpn: {
     parse: (text) => ipcRenderer.invoke('vpn:parse', text),
     apply: (cfg) => ipcRenderer.invoke('vpn:apply', cfg),

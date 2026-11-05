@@ -4,9 +4,11 @@
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src * data: blob: file:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'none'">
 <title>Tako.Browser</title>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" id="theme-css" href="styles.css">
+<link rel="stylesheet" href="common.css">
+<style id="user-css"></style>
 </head>
-<body class="tabs-top">
+<body class="tabs-top theme-tako">
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
@@ -41,11 +43,11 @@
   </defs>
 </svg>
 
-<div id="bg"><div id="bg-img"></div><div id="bg-dim"></div><div id="bg-grain"></div></div>
+<div id="bg"><div id="bg-img"></div><div id="bg-blobs"><i></i><i></i><i></i></div><div id="bg-grain"></div><div id="bg-dim"></div></div>
 
 <header id="titlebar">
   <img class="logo" src="assets/logo.png" alt="">
-  <span class="app-name">tako<span class="app-suffix">/browser</span></span>
+  <span class="app-name" id="app-name">Tako<span class="app-suffix">.browser</span></span>
   <span class="page-title" id="page-title"></span>
   <div class="slot" id="slot-top"></div>
   <div class="drag-fill"></div>
@@ -118,6 +120,7 @@
 
       <div id="content">
         <section id="start">
+          <div class="start-glow"></div>
           <div class="start-inner">
             <div class="start-meta"><img class="start-logo" src="assets/logo.png" alt=""><span id="clock"></span></div>
             <h1 id="greeting">Куда отправимся?</h1>
@@ -125,16 +128,16 @@
             <form id="start-search" autocomplete="off">
               <svg class="i"><use href="#i-search"/></svg>
               <input id="start-input" spellcheck="false" placeholder="Искать в Google или ввести адрес">
-              <button class="btn accent" type="submit">Найти <kbd>↵</kbd></button>
+              <button class="btn accent" type="submit" id="start-go">Найти</button>
             </form>
             <div class="dial-head"><span>Мои сайты</span><small>правая кнопка по плитке — изменить</small></div>
             <div id="dial"></div>
           </div>
-          <button class="link-btn start-customize" id="start-customize">настроить вид →</button>
+          <button class="btn ghost small start-customize" id="start-customize"></button>
         </section>
         <div id="page-error" hidden>
           <img src="assets/logo.png" alt="">
-          <h2>Не открылось.</h2>
+          <h2>Страница не открылась</h2>
           <p id="page-error-text"></p>
           <div class="row"><button class="btn accent" id="page-error-retry">Попробовать снова</button><button class="btn" id="page-error-vpn">Открыть через VPN</button></div>
         </div>

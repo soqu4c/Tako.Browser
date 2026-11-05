@@ -26,6 +26,8 @@
       "renderer.js",
       "index.html",
       "styles.css",
+      "styles-handmade.css",
+      "common.css",
       "assets/**"
     ],
     "extraResources": [{ "from": "bin", "to": "bin", "filter": ["**/*"] }],

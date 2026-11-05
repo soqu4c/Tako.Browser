@@ -1,0 +1,117 @@
+/*
+  Loaded after the theme stylesheet (styles.css or styles-handmade.css).
+  Everything the settings can change that is not tied to one theme,
+  plus the economy mode.
+*/
+
+:root { --gap: 10px; --tab-max: 210px; --accent2-rgb: 255, 154, 74; --grain: .45; }
+
+/* ---------- background extras */
+
+/* Soft spots for the "live" background. Radial gradients instead of filter: blur —
+   the GPU no longer re-blurs three screen-sized layers on every frame. */
+#bg-blobs { position: absolute; inset: 0; display: none; }
+body.bg-anim #bg-blobs { display: block; }
+#bg-blobs i {
+  position: absolute;
+  width: 72vmax;
+  height: 72vmax;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--accent-rgb), .26) 0%, rgba(var(--accent-rgb), .08) 38%, transparent 64%);
+  will-change: transform;
+  animation: drift 28s ease-in-out infinite alternate;
+}
+#bg-blobs i:nth-child(1) { left: -22vmax; top: -30vmax; }
+#bg-blobs i:nth-child(2) { right: -26vmax; top: 4%; background: radial-gradient(circle, rgba(var(--accent2-rgb), .22) 0%, rgba(var(--accent2-rgb), .06) 38%, transparent 64%); animation-duration: 34s; animation-delay: -8s; }
+#bg-blobs i:nth-child(3) { left: 18%; bottom: -40vmax; opacity: .7; animation-duration: 40s; animation-delay: -16s; }
+@keyframes drift { 33% { transform: translate3d(8vw, 6vh, 0) scale(1.1); } 66% { transform: translate3d(-6vw, 10vh, 0) scale(.92); } 100% { transform: translate3d(4vw, -6vh, 0) scale(1.05); } }
+
+#bg-grain {
+  position: absolute;
+  inset: 0;
+  display: none;
+  opacity: var(--grain);
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+body.grain #bg-grain { display: block; }
+
+/* ---------- spacing, density, tab width */
+
+#app { padding: 0 var(--gap) var(--gap); gap: calc(var(--gap) * .8); }
+body.theme-tako #center { gap: calc(var(--gap) * .8); }
+
+body.density-compact { --titlebar: 34px; }
+body.density-compact .tab { height: 26px !important; }
+body.density-compact #toolbar { padding-top: 3px; padding-bottom: 3px; }
+body.density-compact #omnibox { height: 28px; }
+body.density-compact button.icon.sm { width: 28px; height: 28px; }
+body.density-large { --titlebar: 46px; }
+body.density-large .tab { height: 38px !important; }
+body.density-large #toolbar { padding-top: 8px; padding-bottom: 8px; }
+body.density-large #omnibox { height: 40px; }
+body.density-large button.icon.sm { width: 36px; height: 36px; }
+
+body.tabs-top .tab:not(.pinned), body.tabs-bottom .tab:not(.pinned) { flex-basis: var(--tab-max) !important; }
+
+/* ---------- what is shown */
+
+body.hide-nav #nav-back, body.hide-nav #nav-fwd,
+body.hide-reload #nav-reload,
+body.hide-home #nav-home,
+body.hide-dialpin #omni-dial,
+body.hide-vpnbtn #btn-vpn,
+body.hide-notesbtn #btn-notes,
+body.hide-settingsbtn #btn-settings,
+body.hide-appname #titlebar .logo, body.hide-appname #titlebar .app-name,
+body.hide-tabclose .tab .close,
+body.hide-logo .start-logo,
+body.hide-dial #dial, body.hide-dial .dial-head,
+body.hide-search #start-search,
+body.hide-customize #start-customize { display: none !important; }
+body.start-left .start-inner { align-items: flex-start; }
+body.start-left.theme-tako #dial { justify-content: flex-start; }
+body.start-top #start { align-items: flex-start; padding-top: 9vh; }
+
+body.notes-left #notes { order: 1; }
+body.notes-right #notes { order: 3; }
+
+/* ---------- tabs that were unloaded to save memory */
+
+.tab.suspended .fav, .tab.suspended .title { opacity: .45; }
+.tab.suspended .title { font-style: italic; }
+
+/* ---------- economy mode: no blur, no animation, no live background */
+
+body.perf *, body.perf *::before, body.perf *::after {
+  backdrop-filter: none !important;
+  animation: none !important;
+  transition: none !important;
+}
+body.perf #bg-blobs, body.perf #bg-grain, body.perf .start-glow { display: none !important; }
+body.perf #bg-img { filter: none !important; inset: 0 !important; }
+
+/* ---------- controls used only by the settings window */
+
+.theme-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.theme-opt { display: flex; flex-direction: column; align-items: stretch; gap: 8px; padding: 8px; text-align: left; white-space: normal; }
+.theme-opt .pv { height: 74px; border-radius: 6px; position: relative; overflow: hidden; border: 1px solid rgba(255, 255, 255, .08); }
+.theme-opt .pv i { position: absolute; display: block; }
+.theme-opt b { color: var(--text); font-size: 13px; }
+.theme-opt small { color: var(--muted); font-size: 11.5px; line-height: 1.35; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.chip { padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--muted); font-size: 12px; font-weight: 600; }
+body.theme-handmade .chip { border-radius: 3px; }
+.chip:hover { color: var(--text); }
+.chip.on { background: var(--accent-soft); border-color: var(--accent); color: var(--text); }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255, 255, 255, .03); }
+body.theme-handmade .stat { border-radius: 3px; }
+.stat b { display: block; font-size: 20px; color: var(--text); font-variant-numeric: tabular-nums; }
+.stat small { color: var(--muted); font-size: 11.5px; }
+#user-css-input { min-height: 150px; font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+.font-preview { padding: 10px 12px; border-radius: 8px; border: 1px dashed var(--line-2); color: var(--soft); }
+#set-panel { overflow-x: hidden; }
+.set-row .ctl { min-width: 0; }
+.set-row .seg { flex-wrap: wrap; max-width: 100%; }
+.set-row.col .ctl, .set-row.col .chips { justify-content: flex-start; }

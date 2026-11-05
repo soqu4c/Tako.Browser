@@ -11,6 +11,12 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 // ---------- presets
 
 const ACCENTS = {
+  salsa: ['#ff5a47', '#ff9a4a', 'Сальса'],
+  berry: ['#ff4f8b', '#ff7a5c', 'Ягода'],
+  grape: ['#9b6bff', '#d46bff', 'Виноград'],
+  ocean: ['#3d8bff', '#3fd0ff', 'Океан'],
+  lime: ['#2fc48d', '#9be15d', 'Лайм'],
+  honey: ['#f5a524', '#ffd166', 'Мёд'],
   mustard: ['#e8b931', '#d9653b', 'Горчица'],
   tomato: ['#e0552f', '#e8b931', 'Томат'],
   moss: ['#9bbf6a', '#e8b931', 'Мох'],
@@ -19,30 +25,60 @@ const ACCENTS = {
   chalk: ['#ece6d6', '#d9653b', 'Мел'],
 };
 const PANELS = {
+  graphite: ['#15171f', 'Графит'],
+  midnight: ['#111830', 'Полночь'],
+  coal: ['#0d0d10', 'Уголь'],
+  plum: ['#1e1524', 'Слива'],
+  pine: ['#10201a', 'Хвоя'],
+  mocha: ['#211915', 'Мокко'],
   ink: ['#171917', 'Тушь'],
-  moss: ['#161c15', 'Мох'],
-  coffee: ['#1f1914', 'Кофе'],
   slate: ['#191b21', 'Сланец'],
-  night: ['#121622', 'Ночь'],
   brick: ['#221613', 'Кирпич'],
 };
 const BACKGROUNDS = {
-  ink: { name: 'тушь', css: () => 'radial-gradient(120% 90% at 50% 0%, #1d201c 0%, #0e100e 70%)' },
-  mustard: { name: 'горчица', css: (a) => `radial-gradient(70% 60% at 100% 0%, rgba(${hexRgb(a)}, .22), transparent 70%), linear-gradient(170deg, #181914, #0e0f0c)` },
-  moss: { name: 'мох', css: () => 'linear-gradient(170deg, #1e2a19 0%, #121a10 55%, #0b0f0a 100%)' },
-  brick: { name: 'кирпич', css: () => 'linear-gradient(170deg, #32190f 0%, #1c0f0b 60%, #100907 100%)' },
-  dusk: { name: 'сумерки', css: () => 'linear-gradient(178deg, #1a1f2e 0%, #2a2232 50%, #3d2a22 100%)' },
-  sea: { name: 'море', css: () => 'linear-gradient(170deg, #12292b 0%, #0c1b1d 60%, #081012 100%)' },
-  paper: { name: 'крафт', css: () => 'linear-gradient(170deg, #3a2e1f 0%, #261e14 60%, #17120c 100%)' },
-  mono: { name: 'ровно', css: () => 'var(--bg-solid)' },
+  tako: { name: 'Тако', css: (a, b) => `radial-gradient(1100px 620px at 50% -12%, rgba(${hexRgb(a)}, .30), transparent 62%), radial-gradient(900px 520px at 100% 110%, rgba(${hexRgb(b)}, .16), transparent 60%), #0c0d12` },
+  night: { name: 'Ночь', css: () => 'radial-gradient(1000px 600px at 80% 0%, #1d2b5a 0%, transparent 60%), linear-gradient(160deg, #090c18, #0d1226 55%, #07080f)' },
+  aurora: { name: 'Сияние', css: () => 'radial-gradient(at 18% 22%, #1b5a50 0, transparent 50%), radial-gradient(at 82% 28%, #44307a 0, transparent 50%), radial-gradient(at 50% 92%, #0f3b5a 0, transparent 55%), #0a0c13' },
+  sunset: { name: 'Закат', css: () => 'linear-gradient(165deg, #1d0f2e 0%, #4a1735 45%, #a2402c 85%, #d9813a 100%)' },
+  ocean: { name: 'Глубина', css: () => 'radial-gradient(900px 600px at 20% 10%, #0f5e7a 0%, transparent 60%), linear-gradient(170deg, #031a26, #062c43 60%, #020c13)' },
+  forest: { name: 'Лес', css: () => 'radial-gradient(800px 500px at 70% 0%, #1f5a3c 0%, transparent 60%), linear-gradient(165deg, #07140e, #0d2419 60%, #050b08)' },
+  candy: { name: 'Конфета', css: () => 'linear-gradient(135deg, #2b0f45 0%, #6d1f63 50%, #1c2259 100%)' },
+  ink: { name: 'Тушь', css: () => 'radial-gradient(120% 90% at 50% 0%, #1d201c 0%, #0e100e 70%)' },
+  mustard: { name: 'Горчица', css: (a) => `radial-gradient(70% 60% at 100% 0%, rgba(${hexRgb(a)}, .22), transparent 70%), linear-gradient(170deg, #181914, #0e0f0c)` },
+  brick: { name: 'Кирпич', css: () => 'linear-gradient(170deg, #32190f 0%, #1c0f0b 60%, #100907 100%)' },
+  dusk: { name: 'Сумерки', css: () => 'linear-gradient(178deg, #1a1f2e 0%, #2a2232 50%, #3d2a22 100%)' },
+  paper: { name: 'Крафт', css: () => 'linear-gradient(170deg, #3a2e1f 0%, #261e14 60%, #17120c 100%)' },
+  mono: { name: 'Без фона', css: () => 'var(--bg-solid)' },
+};
+// A theme is a stylesheet plus the colours that suit it; picking one resets just these
+const THEMES = {
+  tako: {
+    name: 'Тако', css: 'styles.css', hint: 'Мягкие градиенты, стекло, свечение — как в Tako.player',
+    preview: 'background:radial-gradient(120px 60px at 50% 0%, rgba(255,90,71,.45), transparent 70%), #0c0d12',
+    defaults: { accent: 'salsa', panel: 'graphite', bg: 'tako', radius: 14, panelAlpha: 78, bgAnim: true, bgGrain: false, bgDim: 15 },
+  },
+  handmade: {
+    name: 'Ручной', css: 'styles-handmade.css', hint: 'Плоские цвета, жёсткие тени, засечки, бумажное зерно',
+    preview: 'background:radial-gradient(120% 90% at 50% 0%, #1d201c, #0e100e 70%)',
+    defaults: { accent: 'mustard', panel: 'ink', bg: 'ink', radius: 6, panelAlpha: 92, bgAnim: false, bgGrain: true, bgDim: 10 },
+  },
+};
+const FONTS = {
+  default: ['Как в теме', ''],
+  system: ['Системный', '"Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif'],
+  rounded: ['Округлый', '"Nunito", "Varela Round", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif'],
+  serif: ['С засечками', '"Iowan Old Style", "Palatino Linotype", Georgia, Cambria, serif'],
+  mono: ['Моноширинный', '"JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace'],
+  custom: ['Свой', ''],
 };
 const ENGINES = {
   google: ['Google', 'https://www.google.com/search?q='],
   yandex: ['Яндекс', 'https://yandex.ru/search/?text='],
   ddg: ['DuckDuckGo', 'https://duckduckgo.com/?q='],
   bing: ['Bing', 'https://www.bing.com/search?q='],
+  custom: ['Свой', ''],
 };
-const COLORS = ['#e8b931', '#d9653b', '#e0552f', '#9bbf6a', '#4fa3a5', '#6b8fd6', '#b07acc', '#ece6d6'];
+const COLORS = ['#ff5a47', '#ff9a4a', '#f5c84b', '#2fc48d', '#3fd0ff', '#3d8bff', '#9b6bff', '#ff4f8b', '#9bbf6a', '#ece6d6'];
 const DEFAULT_DIAL = [
   { name: 'YouTube', url: 'https://www.youtube.com/' },
   { name: 'Google', url: 'https://www.google.com/' },
@@ -54,14 +90,20 @@ const DEFAULT_DIAL = [
 ];
 
 const DEFAULTS = {
-  accent: 'mustard', accentCustom: '#e8b931',
-  panel: 'ink', panelCustom: '#171917', panelAlpha: 92,
-  radius: 6, motion: true,
-  bg: 'ink', bgImage: '', bgColor1: '#1e2a19', bgColor2: '#32190f', bgAngle: 160, bgDim: 10, bgBlur: 0, bgGrain: true,
-  tabsPos: 'top', tabsCompact: false, tabsWidth: 240, tabColorMode: 'accent', newTabNext: true, restore: true,
-  engine: 'google', greeting: 'Куда отправимся?', clock: true,
+  theme: 'tako',
+  accent: 'salsa', accentCustom: '#ff5a47', accent2Custom: '',
+  panel: 'graphite', panelCustom: '#15171f', panelAlpha: 78, textColor: '',
+  radius: 14, motion: true,
+  bg: 'tako', bgImage: '', bgColor1: '#1d1f4a', bgColor2: '#5a1f3a', bgAngle: 150, bgDim: 15, bgBlur: 0, bgAnim: true, bgGrain: false,
+  font: 'default', fontCustom: '', uiScale: 100, density: 'normal', gap: 10, customCss: '',
+  toolbar: { nav: true, reload: true, home: true, dialpin: true, vpn: true, notes: true, settings: true },
+  showAppName: true, notesSide: 'auto',
+  tabsPos: 'top', tabsCompact: false, tabsWidth: 240, tabMax: 210, tabClose: true, tabColorMode: 'accent', newTabNext: true, restore: true,
+  engine: 'google', engineUrl: '', greeting: 'Куда отправимся?', clock: true,
+  start: { logo: true, search: true, dial: true, customize: true, align: 'center', valign: 'center' },
   dial: DEFAULT_DIAL,
   notesWidth: 340, notesOpen: false,
+  perfMode: false, suspendAfter: 30, lazyRestore: true, hwAccel: true,
   vpn: { enabled: false, active: null, mode: 'all', domains: [], profiles: [], xrayPath: '' },
 };
 
@@ -118,7 +160,7 @@ function debounce(fn, ms) {
 const saveSettings = debounce(() => T.store.set('settings', S), 300);
 const saveNotes = debounce(() => T.store.set('notes', notes), 300);
 const saveSession = debounce(() => {
-  const list = tabs.map((t) => ({ url: t.url, title: t.title, pinned: t.pinned, color: t.color }));
+  const list = tabs.map((t) => ({ url: t.url, title: t.title, pinned: t.pinned, color: t.color, favicon: t.favicon }));
   T.store.set('session', { tabs: list, active: tabs.findIndex((t) => t.id === activeId) });
 }, 500);
 
@@ -144,44 +186,109 @@ function toast(msg, opts = {}) {
 // ---------- appearance
 
 function accentPair() {
-  if (S.accent === 'custom') return [S.accentCustom, hueShift(S.accentCustom, 22, 0.08)];
-  return ACCENTS[S.accent] || ACCENTS.mustard;
+  if (S.accent === 'custom') return [S.accentCustom, S.accent2Custom || hueShift(S.accentCustom, 22, 0.08)];
+  return ACCENTS[S.accent] || ACCENTS.salsa;
 }
+
+function searchUrl(q) {
+  if (S.engine === 'custom' && /%s/.test(S.engineUrl || '')) return S.engineUrl.replace(/%s/g, encodeURIComponent(q));
+  const [, base] = ENGINES[S.engine] && ENGINES[S.engine][1] ? ENGINES[S.engine] : ENGINES.google;
+  return base + encodeURIComponent(q);
+}
+const engineName = () => (S.engine === 'custom' ? 'поисковике' : (ENGINES[S.engine] || ENGINES.google)[0]);
 
 function backgroundCss() {
   const [a, b] = accentPair();
-  if (S.bg === 'image' && S.bgImage) return `url("${S.bgImage.replace(/"/g, '%22')}") center / cover no-repeat, #0e100e`;
+  if (S.bg === 'image' && S.bgImage) return `url("${S.bgImage.replace(/"/g, '%22')}") center / cover no-repeat, #0c0d12`;
   if (S.bg === 'gradient') return `linear-gradient(${S.bgAngle}deg, ${S.bgColor1}, ${S.bgColor2})`;
-  return (BACKGROUNDS[S.bg] || BACKGROUNDS.ink).css(a, b);
+  return (BACKGROUNDS[S.bg] || BACKGROUNDS.tako).css(a, b);
+}
+
+function applyTheme(key, withColours) {
+  S.theme = THEMES[key] ? key : 'tako';
+  if (withColours) Object.assign(S, THEMES[S.theme].defaults);
 }
 
 function applyAppearance() {
   const root = document.documentElement.style;
+  const body = document.body.classList;
+  const theme = THEMES[S.theme] || THEMES.tako;
+  const link = $('#theme-css');
+  if (link.getAttribute('href') !== theme.css) link.setAttribute('href', theme.css);
+  for (const k of Object.keys(THEMES)) body.toggle('theme-' + k, k === S.theme);
+  const hand = S.theme === 'handmade';
+
   const [a, b] = accentPair();
   root.setProperty('--accent', a);
   root.setProperty('--accent-2', b);
   root.setProperty('--accent-rgb', hexRgb(a));
+  root.setProperty('--accent2-rgb', hexRgb(b));
   const [r, g, bl] = rgbArr(a);
-  root.setProperty('--on-accent', (0.299 * r + 0.587 * g + 0.114 * bl) > 150 ? '#17150f' : '#fffaf0');
+  root.setProperty('--on-accent', (0.299 * r + 0.587 * g + 0.114 * bl) > 150 ? '#17150f' : '#ffffff');
 
-  const panel = S.panel === 'custom' ? S.panelCustom : (PANELS[S.panel] || PANELS.ink)[0];
+  const panel = S.panel === 'custom' ? S.panelCustom : (PANELS[S.panel] || PANELS.graphite)[0];
   root.setProperty('--panel-rgb', hexRgb(panel));
-  root.setProperty('--panel-a', String(clamp(S.panelAlpha, 20, 100) / 100));
-  root.setProperty('--surface', shade(panel, 3));
-  root.setProperty('--surface-2', shade(panel, 10));
-  root.setProperty('--surface-3', shade(panel, 22));
+  root.setProperty('--panel-a', String(S.perfMode ? 1 : clamp(S.panelAlpha, 20, 100) / 100));
+  root.setProperty('--surface', shade(panel, 2));
+  root.setProperty('--surface-2', shade(panel, 9));
+  root.setProperty('--surface-3', shade(panel, 19));
   root.setProperty('--bg-solid', shade(panel, -8));
+  if (hand) root.removeProperty('--glass');
+  else root.setProperty('--glass', `rgba(${hexRgb(shade(panel, -2))}, ${S.perfMode ? 1 : 0.86})`);
+  if (S.textColor) {
+    root.setProperty('--text', S.textColor);
+    root.setProperty('--soft', `color-mix(in srgb, ${S.textColor} 78%, ${panel})`);
+    root.setProperty('--muted', `color-mix(in srgb, ${S.textColor} 52%, ${panel})`);
+  } else {
+    for (const v of ['--text', '--soft', '--muted']) root.removeProperty(v);
+  }
   root.setProperty('--r', S.radius + 'px');
   root.setProperty('--tabs-w', S.tabsWidth + 'px');
   root.setProperty('--notes-w', S.notesWidth + 'px');
+  root.setProperty('--tab-max', S.tabMax + 'px');
+  root.setProperty('--gap', S.gap + 'px');
   root.setProperty('--bg-dim', String(S.bgDim / 100));
-  root.setProperty('--bg-blur', S.bgBlur + 'px');
-  $('#bg-img').style.background = backgroundCss();
-  document.body.classList.toggle('grain', !!S.bgGrain);
-  document.body.classList.toggle('no-motion', !S.motion);
-  T.win.overlay('#00000000', '#c2bba8');
+  root.setProperty('--bg-blur', (S.perfMode ? 0 : S.bgBlur) + 'px');
+  const bgCss = backgroundCss();
+  const bgEl = $('#bg-img');
+  if (bgEl.dataset.css !== bgCss) { bgEl.dataset.css = bgCss; bgEl.style.background = bgCss; }
+
+  body.toggle('bg-anim', !!S.bgAnim && !S.perfMode && S.bg !== 'image');
+  body.toggle('grain', !!S.bgGrain && !S.perfMode);
+  body.toggle('no-motion', !S.motion);
+  body.toggle('perf', !!S.perfMode);
+  for (const d of ['compact', 'large']) body.toggle('density-' + d, S.density === d);
+  for (const [k, on] of Object.entries(S.toolbar)) body.toggle('hide-' + (k === 'vpn' ? 'vpnbtn' : k === 'notes' ? 'notesbtn' : k === 'settings' ? 'settingsbtn' : k), !on);
+  body.toggle('hide-appname', !S.showAppName);
+  body.toggle('hide-tabclose', !S.tabClose);
+  body.toggle('hide-logo', !S.start.logo);
+  body.toggle('hide-dial', !S.start.dial);
+  body.toggle('hide-search', !S.start.search);
+  body.toggle('hide-customize', !S.start.customize);
+  body.toggle('start-left', S.start.align === 'left');
+  body.toggle('start-top', S.start.valign === 'top');
+  body.toggle('notes-left', S.notesSide === 'left');
+  body.toggle('notes-right', S.notesSide === 'right');
+
+  const font = S.font === 'custom' ? (S.fontCustom ? `"${S.fontCustom.replace(/"/g, '')}", system-ui, sans-serif` : '') : (FONTS[S.font] || FONTS.default)[1];
+  document.body.style.fontFamily = font;
+  const zoom = clamp(S.uiScale, 70, 150) / 100;
+  T.win.uiZoom(zoom);
+  const titlebar = S.density === 'compact' ? 34 : S.density === 'large' ? 46 : 40;
+  T.win.overlay('#00000000', hand ? '#c2bba8' : '#aab0c4', Math.round(titlebar * zoom));
+  $('#user-css').textContent = S.customCss || '';
+
+  // the few words that differ between the themes
+  $('#app-name').innerHTML = hand ? 'tako<span class="app-suffix">/browser</span>' : 'Tako<span class="app-suffix">.browser</span>';
+  $('#start-go').innerHTML = hand ? 'Найти <kbd>↵</kbd>' : 'Найти';
+  const cust = $('#start-customize');
+  cust.className = hand ? 'link-btn start-customize' : 'btn ghost small start-customize';
+  cust.innerHTML = hand ? 'настроить вид →' : `${icon('palette')}Настроить вид`;
+  tickClock(true);
+  if (lastTheme !== S.theme) { lastTheme = S.theme; renderDial(); }
   renderTabs();
 }
+let lastTheme = null;
 
 function applyLayout() {
   const pos = ['top', 'bottom', 'left', 'right'].includes(S.tabsPos) ? S.tabsPos : 'top';
@@ -200,8 +307,7 @@ function toUrl(text) {
   if (/^[a-z][a-z0-9+.-]*:\/\//i.test(s) || /^(about|data|view-source|file|mailto):/i.test(s)) return s;
   if (/^(localhost|\d{1,3}(\.\d{1,3}){3}|\[[0-9a-f:]+\])(:\d+)?(\/|$)/i.test(s)) return 'http://' + s;
   if (!/\s/.test(s) && /^[^/?#]+\.[a-zа-яё0-9-]{2,}(:\d+)?([/?#]|$)/i.test(s)) return 'https://' + s;
-  const [, base] = ENGINES[S.engine] || ENGINES.google;
-  return base + encodeURIComponent(s);
+  return searchUrl(s);
 }
 
 function hostOf(url) {
@@ -224,14 +330,20 @@ function createTab(url = '', opts = {}) {
   const tab = {
     id: ++seq, url: '', title: opts.title || 'Новая вкладка', favicon: null, loading: false,
     wv: null, pinned: !!opts.pinned, color: opts.color || null, themeColor: null, error: null,
+    lazy: false, suspended: false, lastActive: Date.now(),
   };
   let idx = tabs.length;
   if (opts.index != null) idx = opts.index;
   else if (S.newTabNext && active() && url) idx = tabs.indexOf(active()) + 1;
   if (!tab.pinned) idx = Math.max(idx, tabs.filter((t) => t.pinned).length);
   tabs.splice(idx, 0, tab);
-  if (url) navigate(url, tab);
-  if (!opts.background || !activeId) activate(tab.id);
+  if (url && opts.lazy) {
+    // known address, nothing loaded until the tab is opened
+    tab.url = url;
+    tab.lazy = true;
+    tab.favicon = opts.favicon || null;
+  } else if (url) navigate(url, tab);
+  if (!opts.restoring && (!opts.background || !activeId)) activate(tab.id);
   renderTabs();
   saveSession();
   return tab;
@@ -297,7 +409,15 @@ function navigate(input, tab = active()) {
 function activate(id) {
   const tab = byId(id);
   if (!tab) return;
+  const prev = active();
+  if (prev) prev.lastActive = Date.now();
+  tab.lastActive = Date.now();
   activeId = id;
+  if (tab.lazy && tab.url) {
+    tab.lazy = false;
+    tab.suspended = false;
+    navigate(tab.url, tab);
+  }
   for (const t of tabs) {
     if (t.wv) t.wv.classList.toggle('active', t.id === id);
     const el = tabEls.get(t.id);
@@ -342,6 +462,30 @@ function closeTab(id) {
   saveSession();
 }
 
+/** Frees the memory of a background tab; it reloads when opened again */
+function suspendTab(t) {
+  if (!t || !t.wv || t.id === activeId) return false;
+  t.wv.remove();
+  t.wv = null;
+  t.lazy = true;
+  t.suspended = true;
+  t.loading = false;
+  updateTab(t);
+  return true;
+}
+
+function suspendIdleTabs(force) {
+  const limit = S.suspendAfter * 60000;
+  let n = 0;
+  for (const t of tabs) {
+    if (!t.wv || t.id === activeId) continue;
+    if (!force && (!S.suspendAfter || Date.now() - t.lastActive < limit)) continue;
+    try { if (t.wv.isCurrentlyAudible()) continue; } catch { /* not attached */ }
+    if (suspendTab(t)) n++;
+  }
+  return n;
+}
+
 function reopenClosed() {
   const t = closedStack.pop();
   if (t) createTab(t.url, { title: t.title, index: Math.min(t.index, tabs.length) });
@@ -375,16 +519,17 @@ function updateTab(t) {
   el.classList.toggle('active', t.id === activeId);
   el.classList.toggle('loading', !!t.loading);
   el.classList.toggle('pinned', !!t.pinned);
+  el.classList.toggle('suspended', !!t.suspended);
   const c = tabColor(t);
   el.classList.toggle('colored', !!c);
   if (c) el.style.setProperty('--tab-c', c);
   else if (S.tabColorMode === 'neutral') el.style.setProperty('--tab-c', 'rgba(255, 255, 255, .7)');
   else el.style.removeProperty('--tab-c');
-  el.title = t.url ? `${t.title}\n${t.url}` : t.title;
+  el.title = (t.url ? `${t.title}\n${t.url}` : t.title) + (t.suspended ? '\nВыгружена из памяти — откроется заново' : '');
   el.querySelector('.title').textContent = t.title;
 
   const fav = el.querySelector('.fav');
-  const favKey = !t.wv ? 'taco' : t.favicon || 'globe';
+  const favKey = !t.url ? 'taco' : t.favicon || 'globe';
   if (fav.dataset.k !== favKey) {
     fav.dataset.k = favKey;
     fav.className = 'fav' + (favKey === 'taco' ? ' taco' : '');
@@ -557,12 +702,12 @@ function renderDial() {
   });
   const add = document.createElement('button');
   add.className = 'tile add';
-  add.innerHTML = `<div class="ico">${icon('plus')}</div><span>добавить</span>`;
+  add.innerHTML = `<div class="ico">${icon('plus')}</div><span>${S.theme === 'handmade' ? 'добавить' : 'Добавить'}</span>`;
   add.onclick = () => editDial(-1);
   box.append(add);
   $('#greeting').textContent = S.greeting || '';
   $('#greeting').hidden = !S.greeting;
-  $('#start-input').placeholder = `Искать в ${(ENGINES[S.engine] || ENGINES.google)[0]} или ввести адрес`;
+  $('#start-input').placeholder = `Искать в ${engineName()} или ввести адрес`;
 }
 
 function editDial(i) {
@@ -604,13 +749,19 @@ function toggleDialForActive() {
 
 const MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
 const DAYS = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
-function tickClock() {
+let clockKey = '';
+function tickClock(force) {
   const c = $('#clock');
   c.hidden = !S.clock;
   document.body.classList.toggle('has-clock', !!S.clock);
-  if (!S.clock) return;
+  if (!S.clock || (!force && $('#start').hidden)) return; // nobody sees it
   const d = new Date();
-  c.innerHTML = `${DAYS[d.getDay()]} · ${d.getDate()} ${MONTHS[d.getMonth()]} · <b>${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}</b>`;
+  const hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  const date = `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+  const key = S.theme + hm + date;
+  if (key === clockKey) return;
+  clockKey = key;
+  c.innerHTML = S.theme === 'handmade' ? `${date.replace(',', ' ·')} · <b>${hm}</b>` : `${hm}<small>${date}</small>`;
 }
 
 // ---------- floating menus
@@ -683,6 +834,9 @@ function tabMenu(t, x, y) {
     { label: 'Закрыть', icon: 'x', fn: () => closeTab(t.id) },
     { label: 'Закрыть другие', fn: () => tabs.filter((x) => x !== t && !x.pinned).forEach((x) => closeTab(x.id)), disabled: tabs.length < 2 },
     { label: 'Закрыть вкладки после этой', fn: () => tabs.slice(tabs.indexOf(t) + 1).filter((x) => !x.pinned).forEach((x) => closeTab(x.id)) },
+    '-',
+    { label: 'Выгрузить из памяти', icon: 'zap', fn: () => suspendTab(t), disabled: !t.wv || t.id === activeId },
+    { label: 'Выгрузить все фоновые', fn: () => toast(`Выгружено вкладок: ${suspendIdleTabs(true)}`) },
   ]);
 }
 
@@ -970,12 +1124,15 @@ function toggleVpnPopover() {
 
 const SECTIONS = [
   ['look', 'palette', 'Внешний вид'],
+  ['ui', 'sidebar', 'Интерфейс'],
   ['tabs', 'tabs', 'Вкладки'],
   ['start', 'home', 'Стартовая и поиск'],
   ['vpn', 'shield', 'VPN'],
+  ['perf', 'zap', 'Оптимизация'],
   ['data', 'note', 'Заметки и данные'],
   ['about', 'info', 'О программе'],
 ];
+const chip = (key, label) => `<button class="chip ${getKey(key) ? 'on' : ''}" data-chip="${key}">${label}</button>`;
 let setSection = 'look';
 
 function openSettings(section) {
@@ -1011,8 +1168,14 @@ function renderSettings() {
   p.style.animation = 'none';
   void p.offsetWidth;
   p.style.animation = '';
+  const scroll = p.dataset.section === setSection ? p.scrollTop : 0;
+  p.dataset.section = setSection;
   p.innerHTML = SETTINGS_PANELS[setSection]();
   bindSettings(p);
+  p.scrollTop = scroll;
+  clearInterval(statsTimer);
+  statsTimer = null;
+  if (setSection === 'perf') { updateStats(); statsTimer = setInterval(updateStats, 2000); }
 }
 
 const SETTINGS_PANELS = {
@@ -1026,11 +1189,17 @@ const SETTINGS_PANELS = {
       + `<button class="bg-opt ${S.bg === 'gradient' ? 'on' : ''}" data-bg="gradient" style="background:linear-gradient(${S.bgAngle}deg,${S.bgColor1},${S.bgColor2})"><span>Свой градиент</span></button>`
       + (S.bgImage ? `<button class="bg-opt ${S.bg === 'image' ? 'on' : ''}" data-bg="image" style="background:url('${esc(S.bgImage)}') center/cover"><span>Картинка</span></button>` : '')
       + `<button class="bg-opt upload" id="bg-upload">${icon('image')}<span>Своя картинка…</span></button>`;
+    const themes = Object.entries(THEMES).map(([k, t]) => `<button class="layout-opt theme-opt ${S.theme === k ? 'on' : ''}" data-theme="${k}"><div class="pv" style="${t.preview}">${k === 'tako'
+      ? '<i style="left:8px;right:8px;top:8px;height:10px;border-radius:5px;background:rgba(255,255,255,.08)"></i><i style="left:30%;right:30%;top:34px;height:14px;border-radius:7px;background:linear-gradient(135deg,#ff5a47,#ff9a4a);box-shadow:0 4px 14px rgba(255,90,71,.6)"></i>'
+      : '<i style="left:8px;right:8px;top:8px;height:10px;border:1px solid rgba(236,230,214,.2);background:#171917"></i><i style="left:30%;right:30%;top:34px;height:14px;background:#e8b931;box-shadow:3px 3px 0 #000"></i>'}</div><b>${t.name}</b><small>${t.hint}</small></button>`).join('');
     return `<h3>Внешний вид</h3>
+      <div class="set-row col"><div class="txt"><div>Тема</div><small>Меняет оформление целиком. Цвета и фон после выбора можно настроить как угодно</small></div><div class="theme-cards">${themes}</div></div>
       ${row('Цвет акцента', 'Кнопки, индикаторы, подсветка', `<div class="swatches">${accents}</div>`)}
+      ${S.accent === 'custom' ? row('Второй цвет акцента', 'Для градиентов и мелких деталей. Пусто — подберётся сам', `<input type="color" class="plain" id="accent2-custom" value="${S.accent2Custom || accentPair()[1]}"><button class="btn small ghost" id="accent2-auto">Авто</button>`) : ''}
       ${row('Цвет панелей', 'Вкладки, адресная строка, заметки', `<div class="swatches">${panels}</div>`)}
-      ${row('Прозрачность панелей', 'Чем меньше — тем сильнее виден фон', range('panelAlpha', 20, 100, '%'))}
-      ${row('Скругление углов', '0 — совсем острые', range('radius', 0, 14, ' px'))}
+      ${row('Цвет текста', S.textColor ? 'Свой цвет' : 'Как в теме', `<input type="color" class="plain" id="text-color" value="${S.textColor || (S.theme === 'handmade' ? '#ece6d6' : '#eef0f6')}">${S.textColor ? '<button class="btn small ghost" id="text-reset">Сбросить</button>' : ''}`)}
+      ${row('Прозрачность панелей', S.perfMode ? 'В режиме экономии панели всегда непрозрачные' : 'Чем меньше — тем сильнее виден фон', range('panelAlpha', 20, 100, '%'))}
+      ${row('Скругление углов', '0 — совсем острые', range('radius', 0, 26, ' px'))}
       <h4>Фон</h4>
       <div class="set-row col"><div class="bg-grid">${bgs}</div></div>
       ${S.bg === 'gradient' ? row('Цвета градиента', '', `<input type="color" class="plain" data-key="bgColor1" value="${S.bgColor1}"><input type="color" class="plain" data-key="bgColor2" value="${S.bgColor2}">${range('bgAngle', 0, 360, '°')}`) : ''}
@@ -1038,9 +1207,23 @@ const SETTINGS_PANELS = {
         <form class="inline-form" id="bg-url-form"><input class="text-input" id="bg-url" placeholder="https://…/wallpaper.jpg" value="${S.bg === 'image' && /^https?:/.test(S.bgImage) ? esc(S.bgImage) : ''}"><button class="btn">Применить</button></form></div>
       ${row('Затемнение фона', '', range('bgDim', 0, 85, '%'))}
       ${row('Размытие фона', '', range('bgBlur', 0, 40, ' px'))}
+      ${row('Живой фон', 'Медленно плывущие пятна цвета акцента', sw('bgAnim'))}
       ${row('Зерно', 'Лёгкая шероховатость, как у бумаги', sw('bgGrain'))}
       ${row('Анимации интерфейса', '', sw('motion'))}`;
   },
+  ui: () => `<h3>Интерфейс</h3>
+      ${row('Шрифт', '', seg('font', Object.entries(FONTS).map(([k, [n]]) => [k, n])), 'col')}
+      ${S.font === 'custom' ? `<div class="set-row col"><div class="txt"><div>Название шрифта</div><small>Любой шрифт, установленный в системе, например <code>Comic Sans MS</code> или <code>Montserrat</code></small></div><input class="text-input" data-key="fontCustom" value="${esc(S.fontCustom)}" placeholder="Montserrat"></div>` : ''}
+      <div class="set-row col"><div class="font-preview">Съешь же ещё этих мягких французских булок, да выпей чаю — 0123456789</div></div>
+      ${row('Масштаб интерфейса', 'Размер панелей, кнопок и текста. Страницы сайтов не меняются', range('uiScale', 70, 150, '%', 5))}
+      ${row('Плотность', 'Высота вкладок и панели адреса', seg('density', [['compact', 'Компактно'], ['normal', 'Обычно'], ['large', 'Просторно']]))}
+      ${row('Отступы', 'Расстояние между панелями и краем окна', range('gap', 0, 28, ' px'))}
+      ${row('Кнопки на панели', S.toolbar.settings ? '' : 'Настройки всё равно открываются по Ctrl+,', `<div class="chips">${chip('toolbar.nav', 'Назад / вперёд')}${chip('toolbar.reload', 'Обновить')}${chip('toolbar.home', 'Домой')}${chip('toolbar.dialpin', 'На стартовую')}${chip('toolbar.vpn', 'VPN')}${chip('toolbar.notes', 'Заметки')}${chip('toolbar.settings', 'Настройки')}</div>`, 'col')}
+      ${row('Логотип и название в заголовке', '', sw('showAppName'))}
+      ${row('Панель заметок', 'С какой стороны открывается', seg('notesSide', [['auto', 'Авто'], ['left', 'Слева'], ['right', 'Справа']]))}
+      <h4>Свой CSS</h4>
+      <div class="set-row col"><div class="txt"><small>Для тех, кому мало настроек: любые правила, применяются сразу. Например <code>.tab { font-weight: 700 }</code> или <code>:root { --accent: hotpink }</code></small></div>
+        <textarea class="text-input" id="user-css-input" data-key="customCss" spellcheck="false" placeholder="/* ваши стили */">${esc(S.customCss)}</textarea></div>`,
   tabs: () => {
     const lay = (v, name) => `<button class="layout-opt ${S.tabsPos === v ? 'on' : ''}" data-layout="${v}"><div class="lay ${v}"><i class="tb"></i><i class="pg"></i></div>${name}</button>`;
     return `<h3>Вкладки</h3>
@@ -1048,14 +1231,19 @@ const SETTINGS_PANELS = {
         <div class="layouts">${lay('top', 'Сверху')}${lay('bottom', 'Снизу')}${lay('left', 'Слева')}${lay('right', 'Справа')}</div></div>
       ${row('Только значки', 'Для боковых вкладок: узкая панель с иконками сайтов', sw('tabsCompact'))}
       ${row('Ширина боковой панели', '', range('tabsWidth', 170, 380, ' px'))}
+      ${row('Ширина вкладки', 'Для вкладок сверху и снизу', range('tabMax', 110, 340, ' px', 10))}
+      ${row('Крестик на вкладках', 'Без него вкладка закрывается средней кнопкой мыши или Ctrl+W', sw('tabClose'))}
       ${row('Цвет вкладок', 'Свой цвет каждой вкладке можно задать правой кнопкой по ней', seg('tabColorMode', [['accent', 'Акцент'], ['site', 'Цвет сайта'], ['neutral', 'Нейтральный']]))}
       ${row('Открывать новые вкладки рядом с текущей', '', sw('newTabNext'))}
       ${row('Восстанавливать вкладки при запуске', '', sw('restore'))}`;
   },
   start: () => `<h3>Стартовая и поиск</h3>
-      ${row('Поисковая система', '', seg('engine', Object.entries(ENGINES).map(([k, [n]]) => [k, n])))}
+      ${row('Поисковая система', '', seg('engine', Object.entries(ENGINES).map(([k, [n]]) => [k, n])), 'col')}
+      ${S.engine === 'custom' ? `<div class="set-row col"><div class="txt"><div>Адрес поиска</div><small>Вместо запроса поставьте <code>%s</code>, например <code>https://search.brave.com/search?q=%s</code></small></div><input class="text-input mono" data-key="engineUrl" value="${esc(S.engineUrl)}" placeholder="https://example.com/search?q=%s"></div>` : ''}
+      ${row('Что показывать', '', `<div class="chips">${chip('start.logo', 'Логотип')}${chip('clock', 'Часы')}${chip('start.search', 'Поиск')}${chip('start.dial', 'Плитки')}${chip('start.customize', '«Настроить вид»')}</div>`, 'col')}
+      ${row('Выравнивание', '', seg('start.align', [['center', 'По центру'], ['left', 'Слева']]))}
+      ${row('Положение', '', seg('start.valign', [['center', 'Посередине'], ['top', 'Сверху']]))}
       <div class="set-row col"><div class="txt"><div>Приветствие</div></div><input class="text-input" data-key="greeting" value="${esc(S.greeting)}" placeholder="Оставьте пустым, чтобы скрыть"></div>
-      ${row('Часы на стартовой', '', sw('clock'))}
       ${row('Плитки сайтов', `Сейчас: ${S.dial.length}. Добавляйте кнопкой «+» на стартовой или значком в адресной строке`, '<button class="btn small" id="dial-reset">Вернуть стандартные</button>')}`,
   vpn: () => {
     const v = S.vpn;
@@ -1076,11 +1264,21 @@ const SETTINGS_PANELS = {
       ${row('Проверить IP', 'Какой адрес видят сайты', '<button class="btn small" id="vpn-ip">Проверить</button>')}
       <div class="mono" id="vpn-ip-out" style="color:var(--soft);white-space:pre-wrap"></div>`;
   },
+  perf: () => `<h3>Оптимизация</h3>
+      <div class="set-row col"><div class="stats" id="perf-stats"><div class="stat"><b>…</b><small>память</small></div><div class="stat"><b>…</b><small>загружено вкладок</small></div><div class="stat"><b>…</b><small>процессов</small></div></div></div>
+      ${row('Режим экономии', 'Без размытия, анимаций, живого фона и зерна. Меньше нагрузка на видеокарту и батарею', sw('perfMode'))}
+      ${row('Выгружать неактивные вкладки', 'Фоновая вкладка освобождает память и загружается заново, когда вы на неё вернётесь. Вкладки, где играет звук, не трогаются', seg('suspendAfter', [[0, 'Никогда'], [5, '5 мин'], [15, '15 мин'], [30, '30 мин'], [60, '1 час']]), 'col')}
+      ${row('Выгрузить фоновые вкладки сейчас', '', '<button class="btn small" id="suspend-now">Выгрузить</button>')}
+      ${row('Ленивая загрузка при запуске', 'Восстановленные вкладки загружаются только когда вы их откроете — запуск в разы быстрее', sw('lazyRestore'))}
+      ${row('Аппаратное ускорение', 'Выключите, если видео дёргается или окно мерцает. Нужен перезапуск', `${sw('hwAccel')}<button class="btn small" id="relaunch">Перезапустить</button>`)}`,
   data: () => `<h3>Заметки и данные</h3>
       ${row('Ширина панели заметок', '', range('notesWidth', 280, 560, ' px'))}
       ${row('Экспорт заметок', `Всего заметок: ${notes.length}. Сохраняются в один файл Markdown`, '<button class="btn small" id="notes-export">Сохранить в файл…</button>')}
       ${row('Очистить кэш', 'Картинки и файлы сайтов, сохранённые для скорости', '<button class="btn small" id="clear-cache">Очистить</button>')}
-      ${row('Очистить cookies и данные сайтов', 'Вы выйдете из аккаунтов на всех сайтах', '<button class="btn small danger" id="clear-cookies">Очистить</button>')}`,
+      ${row('Очистить cookies и данные сайтов', 'Вы выйдете из аккаунтов на всех сайтах', '<button class="btn small danger" id="clear-cookies">Очистить</button>')}
+      <h4>Настройки</h4>
+      ${row('Экспорт и импорт', 'Все настройки внешнего вида, вкладок и VPN в одном файле — удобно перенести на другой компьютер', '<button class="btn small" id="set-export">Сохранить…</button><button class="btn small" id="set-import">Загрузить…</button>')}
+      ${row('Сбросить всё', 'Вернуть все настройки как при первом запуске. Заметки и серверы VPN останутся', '<button class="btn small danger" id="set-reset">Сбросить</button>')}`,
   about: () => `<div class="about"><img src="assets/logo.png" alt=""><div class="app-name">Tako<span class="app-suffix">.browser</span></div><div>Браузер в стиле Tako.player: свой фон, вкладки где удобно, заметки и VPN по ссылке.</div>
       <table class="keys">
         <tr><td><kbd>Ctrl</kbd> <kbd>T</kbd></td><td>Новая вкладка</td></tr>
@@ -1099,9 +1297,24 @@ const SETTINGS_PANELS = {
       </table></div>`,
 };
 
+// options whose change shows or hides other rows in the panel
+const RERENDER = new Set(['font', 'engine', 'accent', 'textColor', 'perfMode']);
+let statsTimer = null;
+
+async function updateStats() {
+  const box = $('#perf-stats');
+  if (!box || !$('#settings-dlg').open) { clearInterval(statsTimer); statsTimer = null; return; }
+  const m = await T.metrics();
+  const loaded = tabs.filter((t) => t.wv).length;
+  const cells = box.querySelectorAll('b');
+  cells[0].textContent = m.memMB + ' МБ';
+  cells[1].textContent = `${loaded} из ${tabs.length}`;
+  cells[2].textContent = m.processes;
+}
+
 function onSettingChanged(key) {
   if (key === 'tabsPos' || key === 'tabsCompact') applyLayout();
-  if (['engine', 'greeting'].includes(key)) renderDial();
+  if (['engine', 'engineUrl', 'greeting', 'theme'].includes(key)) renderDial();
   if (key === 'clock') tickClock();
   applyAppearance();
   saveSettings();
@@ -1119,29 +1332,88 @@ function bindSettings(p) {
         if (out) out.textContent = v + out.textContent.replace(/^[-\d.]+/, '');
       }
       onSettingChanged(key);
+      if (RERENDER.has(key)) renderSettings();
       if (key === 'bgColor1' || key === 'bgColor2' || key === 'bgAngle') {
         const opt = $('[data-bg="gradient"]', p);
         if (opt) opt.style.background = `linear-gradient(${S.bgAngle}deg,${S.bgColor1},${S.bgColor2})`;
       }
     };
-    inp.addEventListener(inp.type === 'checkbox' ? 'change' : 'input', handler);
+    // the interface scale changes the slider itself, so it applies on release
+    inp.addEventListener(inp.type === 'checkbox' || key === 'uiScale' ? 'change' : 'input', handler);
+    if (key === 'uiScale') inp.addEventListener('input', () => { const o = $('[data-for="uiScale"]', p); if (o) o.textContent = inp.value + '%'; });
     if (inp.type === 'range') inp.style.setProperty('--fill', ((inp.value - inp.min) / (inp.max - inp.min)) * 100 + '%');
   }
   for (const s of $$('[data-seg]', p)) {
     s.addEventListener('click', (e) => {
       const b = e.target.closest('button');
       if (!b) return;
-      setKey(s.dataset.seg, b.dataset.v);
+      const old = getKey(s.dataset.seg);
+      setKey(s.dataset.seg, typeof old === 'number' ? Number(b.dataset.v) : b.dataset.v);
       for (const x of s.children) x.classList.toggle('on', x === b);
       if (s.dataset.seg === 'vpn.mode') { saveSettings(); renderSettings(); if (S.vpn.enabled) vpnApply(false).then(reloadAffected); return; }
       onSettingChanged(s.dataset.seg);
+      if (RERENDER.has(s.dataset.seg)) renderSettings();
     });
   }
+  for (const c of $$('[data-chip]', p)) {
+    c.onclick = () => {
+      setKey(c.dataset.chip, !getKey(c.dataset.chip));
+      c.classList.toggle('on', !!getKey(c.dataset.chip));
+      onSettingChanged(c.dataset.chip);
+      if (c.dataset.chip === 'toolbar.settings') renderSettings();
+    };
+  }
+  for (const b of $$('[data-theme]', p)) b.onclick = () => { applyTheme(b.dataset.theme, true); applyLayout(); onSettingChanged('theme'); renderSettings(); };
+  const a2 = $('#accent2-custom', p);
+  if (a2) a2.oninput = () => { S.accent2Custom = a2.value; onSettingChanged('accent2Custom'); };
+  const a2a = $('#accent2-auto', p);
+  if (a2a) a2a.onclick = () => { S.accent2Custom = ''; onSettingChanged('accent2Custom'); renderSettings(); };
+  const tc = $('#text-color', p);
+  if (tc) {
+    tc.oninput = () => { S.textColor = tc.value; onSettingChanged('textColor'); };
+    tc.onchange = () => renderSettings();
+  }
+  const tr = $('#text-reset', p);
+  if (tr) tr.onclick = () => { S.textColor = ''; onSettingChanged('textColor'); renderSettings(); };
+  const sn = $('#suspend-now', p);
+  if (sn) sn.onclick = () => { toast(`Выгружено вкладок: ${suspendIdleTabs(true)}`); updateStats(); };
+  const rl = $('#relaunch', p);
+  if (rl) rl.onclick = async () => { await T.store.set('settings', S); T.relaunch(); };
+  const se = $('#set-export', p);
+  if (se) se.onclick = async () => { if (await T.saveJson('Tako.Browser — настройки.json', { tako: 'settings', version: 1, settings: S })) toast('Настройки сохранены'); };
+  const si = $('#set-import', p);
+  if (si) si.onclick = async () => {
+    const data = await T.openJson();
+    if (!data) return;
+    const incoming = data.settings || data;
+    if (data.error || typeof incoming !== 'object' || !incoming.theme && !incoming.accent) { toast(data.error || 'Это не файл настроек Tako.Browser', { err: true }); return; }
+    S = merge(DEFAULTS, incoming);
+    applyLayout();
+    applyAppearance();
+    renderDial();
+    saveSettings();
+    renderSettings();
+    if (S.vpn.enabled) vpnApply(false);
+    toast('Настройки загружены');
+  };
+  const sr = $('#set-reset', p);
+  if (sr) sr.onclick = () => {
+    if (!confirm('Сбросить все настройки?')) return;
+    const keep = { vpn: S.vpn, dial: S.dial, notesOpen: S.notesOpen };
+    S = merge(DEFAULTS, keep);
+    applyLayout();
+    applyAppearance();
+    renderDial();
+    saveSettings();
+    renderSettings();
+    toast('Настройки сброшены');
+  };
   for (const b of $$('[data-accent]', p)) b.onclick = () => { S.accent = b.dataset.accent; onSettingChanged('accent'); renderSettings(); };
   for (const b of $$('[data-panel]', p)) b.onclick = () => { S.panel = b.dataset.panel; onSettingChanged('panel'); renderSettings(); };
   for (const b of $$('[data-bg]', p)) b.onclick = () => { S.bg = b.dataset.bg; onSettingChanged('bg'); renderSettings(); };
   for (const b of $$('[data-layout]', p)) b.onclick = () => { S.tabsPos = b.dataset.layout; onSettingChanged('tabsPos'); renderSettings(); };
   const ac = $('#accent-custom', p);
+  if (ac) ac.onchange = () => renderSettings();
   if (ac) ac.oninput = () => { S.accent = 'custom'; S.accentCustom = ac.value; onSettingChanged('accent'); $$('.swatch[data-accent]', p).forEach((x) => x.classList.remove('on')); ac.parentElement.classList.add('on'); };
   const pc = $('#panel-custom', p);
   if (pc) pc.oninput = () => { S.panel = 'custom'; S.panelCustom = pc.value; onSettingChanged('panel'); $$('.swatch[data-panel]', p).forEach((x) => x.classList.remove('on')); pc.parentElement.classList.add('on'); };
@@ -1448,7 +1720,7 @@ function wire() {
   T.onTabOpen(({ url, background }) => createTab(url, { background }));
   T.onFullscreen((on) => { if (!on) document.body.classList.remove('html-fs'); });
   T.onCtx((c) => {
-    if (c.type === 'search') createTab(toUrl(c.text).startsWith('http') && !/\s/.test(c.text) ? c.text : (ENGINES[S.engine] || ENGINES.google)[1] + encodeURIComponent(c.text));
+    if (c.type === 'search') createTab(toUrl(c.text).startsWith('http') && !/\s/.test(c.text) ? c.text : searchUrl(c.text));
     if (c.type === 'note') {
       const t = active();
       newNote({ text: c.text ? c.text.split('\n').map((l) => '> ' + l).join('\n') + '\n\n' : '', url: c.url, title: c.text ? '' : (t && t.title) || '' });
@@ -1475,7 +1747,8 @@ async function init() {
   applyAppearance();
   renderDial();
   tickClock();
-  setInterval(tickClock, 10000);
+  setInterval(tickClock, 5000);
+  setInterval(() => suspendIdleTabs(false), 60000);
   wire();
   updateVpnButton();
   $('#notes').hidden = !S.notesOpen;
@@ -1487,7 +1760,11 @@ async function init() {
 
   const sess = S.restore ? await T.store.get('session', null) : null;
   if (sess && Array.isArray(sess.tabs) && sess.tabs.length) {
-    const made = sess.tabs.map((t) => createTab(t.url || '', { title: t.title, pinned: t.pinned, color: t.color, background: true, index: tabs.length }));
+    // with lazy restore only the active tab loads; the rest wait for a click
+    const made = sess.tabs.map((t, i) => createTab(t.url || '', {
+      title: t.title, pinned: t.pinned, color: t.color, favicon: t.favicon, background: true, restoring: true, index: tabs.length,
+      lazy: S.lazyRestore && i !== sess.active,
+    }));
     activate((made[sess.active] || made[0]).id);
   } else {
     createTab();

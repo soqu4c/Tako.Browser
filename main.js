@@ -11,6 +11,10 @@ const userDir = () => app.getPath('userData');
 const file = (name) => path.join(userDir(), name);
 
 let win = null;
+
+// Read before the app is ready: some switches only work at startup
+const boot = (() => { try { return JSON.parse(fs.readFileSync(path.join(app.getPath('userData'), 'settings.json'), 'utf8')); } catch { return {}; } })();
+if (boot.hwAccel === false) app.disableHardwareAcceleration();
 const xray = new vpn.Xray();
 let activeProfile = null; // the profile the browser session is routed through, for proxy auth
 
@@ -222,8 +226,28 @@ ipcMain.handle('store:set', (_e, name, data) => {
   return true;
 });
 
-ipcMain.handle('win:overlay', (_e, color, symbolColor) => {
-  try { win && win.setTitleBarOverlay({ color, symbolColor, height: 40 }); } catch { /* not supported here */ }
+ipcMain.handle('win:overlay', (_e, color, symbolColor, height = 40) => {
+  try { win && win.setTitleBarOverlay({ color, symbolColor, height }); } catch { /* not supported here */ }
+});
+
+ipcMain.handle('app:metrics', () => {
+  const list = app.getAppMetrics();
+  const kb = list.reduce((sum, m) => sum + ((m.memory && m.memory.workingSetSize) || 0), 0);
+  const cpu = list.reduce((sum, m) => sum + ((m.cpu && m.cpu.percentCPUUsage) || 0), 0);
+  return { memMB: Math.round(kb / 1024), processes: list.length, cpu: Math.round(cpu) };
+});
+ipcMain.handle('app:relaunch', () => { app.relaunch(); app.quit(); });
+
+ipcMain.handle('file:save-json', async (_e, name, data) => {
+  const r = await dialog.showSaveDialog(win, { title: 'Сохранить', defaultPath: name, filters: [{ name: 'JSON', extensions: ['json'] }] });
+  if (r.canceled || !r.filePath) return false;
+  fs.writeFileSync(r.filePath, JSON.stringify(data, null, 2), 'utf8');
+  return true;
+});
+ipcMain.handle('file:open-json', async () => {
+  const r = await dialog.showOpenDialog(win, { title: 'Открыть', properties: ['openFile'], filters: [{ name: 'JSON', extensions: ['json'] }] });
+  if (r.canceled || !r.filePaths[0]) return null;
+  try { return JSON.parse(fs.readFileSync(r.filePaths[0], 'utf8')); } catch { return { error: 'Это не файл настроек' }; }
 });
 ipcMain.handle('win:fullscreen', (_e, on) => { if (win) win.setFullScreen(on == null ? !win.isFullScreen() : !!on); });
 
